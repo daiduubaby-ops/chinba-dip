@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>All Books - Kids Book Club</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <nav class="nav">
+        <div class="nav-left">
+          <a href="/" class="logo">Kids Book Club</a>
+        </div>
+        <div class="nav-right">
+          <a href="/" class="">Home</a>
+          <a href="/books" class="active">Books</a>
+          <a href="/#about">About</a>
+          <a href="/login" class="login-button">Log in</a>
+        </div>
+      </nav>
+
+      <header>
+        <a href="/" class="back">← Home</a>
+        <h1>All Books</h1>
+      </header>
+
+      <div class="books-grid">
+        {% if books %}
+          {% for book in books %}
+            <div class="book-card">
+              <h3>{{ book.title }}</h3>
+              <p class="author">{{ book.author or 'Unknown author' }}</p>
+              <p class="desc">{{ book.description }}</p>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p>No books available yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+</html>

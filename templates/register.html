@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Register - Kids Book Club</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <nav class="nav">
+        <div class="nav-left">
+          <a href="/" class="logo">Kids Book Club</a>
+        </div>
+        <div class="nav-right">
+          <a href="/books">Books</a>
+          <a href="/login" class="login-button">Log in</a>
+        </div>
+      </nav>
+
+      <main class="auth">
+        <h1>Create an account</h1>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul class="flashes">
+              {% for m in messages %}
+                <li>{{ m }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+
+        <form method="post" action="/register" class="auth-form">
+          <label>Name
+            <input name="name" required placeholder="e.g. Sara" />
+          </label>
+          <label>Age
+            <input name="age" type="number" min="1" max="120" required placeholder="e.g. 8" />
+          </label>
+          <label>Password
+            <input name="password" type="password" required placeholder="Choose a password" />
+          </label>
+          <button type="submit" class="primary">Create account</button>
+        </form>
+
+        <p class="muted">Already have an account? <a href="/login">Log in</a></p>
+      </main>
+    </div>
+  </body>
+  </html>

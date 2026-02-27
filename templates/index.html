@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kids Book Club</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <nav class="nav">
+        <div class="nav-left">
+          <a href="/" class="logo">Kids Book Club</a>
+        </div>
+        <div class="nav-center">
+          <input class="nav-search" placeholder="Search books, stories or authors" />
+        </div>
+        <div class="nav-right">
+          {% if session.get('username') %}
+            <span class="profile-pill">{{ session.username }}</span>
+            <a href="/books">Books</a>
+            <a href="/logout">Logout</a>
+          {% else %}
+            <a href="/books">Books</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+            <a href="/login" class="login-button">Log in</a>
+          {% endif %}
+        </div>
+      </nav>
+
+      <header class="hero">
+        <h1>Welcome to the Kids Book Club</h1>
+        <p class="lead">A colorful place to discover delightful stories for young readers.</p>
+        <a class="cta-button" href="/books">Browse All Books</a>
+      </header>
+
+      <section id="featured" class="featured">
+        <h2>Featured Stories</h2>
+        <div class="books-grid">
+          <div class="book-card">
+            <h3>The Little Red Hen</h3>
+            <p class="author">Traditional</p>
+            <p class="desc">A short tale that teaches the value of helping and sharing.</p>
+          </div>
+          <div class="book-card">
+            <h3>The Very Hungry Caterpillar</h3>
+            <p class="author">Eric Carle</p>
+            <p class="desc">A colorful journey about growth and change.</p>
+          </div>
+          <div class="book-card">
+            <h3>Goodnight Moon</h3>
+            <p class="author">Margaret Wise Brown</p>
+            <p class="desc">A soothing bedtime classic for little ones.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="about" class="about">
+        <h2>About</h2>
+        <p>Explore hand-picked picture books and short stories that spark imagination. Click the button above to see our collection.</p>
+      </section>
+
+      <section id="join" class="join">
+        <h2>Join the Club</h2>
+        <p>Sign up for updates about new books and reading events. (Demo only)</p>
+        <form class="join-form" action="#" method="post" onsubmit="alert('Thanks for joining! (demo)'); return false;">
+          <input type="email" placeholder="Email address" required />
+          <button type="submit">Sign up</button>
+        </form>
+      </section>
+
+      <footer id="contact" class="site-footer">
+        <p>&copy; Kids Book Club — Built with love for young readers.</p>
+      </footer>
+    </div>
+  </body>
+</html>
