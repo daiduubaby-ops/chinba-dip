@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin - Manage Books</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <nav class="nav">
+        <div class="nav-left">
+          <a href="/" class="logo">Kids Book Club</a>
+        </div>
+        <div class="nav-right">
+          <a href="/books">Books</a>
+          <a href="/logout">Logout</a>
+        </div>
+      </nav>
+
+      <main>
+        <h1>Manage books</h1>
+
+        <section class="note-form">
+          <h3>Add a book</h3>
+          <form method="post" action="/admin/books/add" enctype="multipart/form-data">
+            <input name="title" placeholder="Title" required />
+            <input name="author" placeholder="Author" />
+            <!-- allow multiple page images (PNG recommended) -->
+            <label>Cover image (optional): <input name="image" type="file" accept="image/*" /></label>
+            <label>Book pages (PNG): <input name="pages" type="file" accept="image/png" multiple /></label>
+            <textarea name="description" placeholder="Description"></textarea>
+            <button type="submit">Add book</button>
+          </form>
+        </section>
+
+        <section class="books-grid">
+          {% for b in books %}
+            <a class="book-card" href="{{ url_for('book_detail', book_id=b.id) }}">
+              <h3>{{ b.title }}</h3>
+              <p class="author">{{ b.author }}</p>
+              <p class="desc">{{ b.description }}</p>
+            </a>
+            <div style="display:flex;gap:.5rem;align-items:center">
+              <a class="button" href="{{ url_for('admin_book_pages', book_id=b.id) }}">Manage pages</a>
+              <form method="post" action="/admin/books/delete/{{ b.id }}" onsubmit="return confirm('Delete this book?');">
+                <button class="delete" type="submit">Delete</button>
+              </form>
+            </div>
+          {% endfor %}
+        </section>
+
+      </main>
+    </div>
+  </body>
+  </html>

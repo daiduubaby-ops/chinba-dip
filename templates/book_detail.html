@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ book.title }} - Kids Book Club</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <nav class="nav">
+        <div class="nav-left">
+          <a href="/" class="logo">Kids Book Club</a>
+        </div>
+        <div class="nav-right">
+          <a href="/">Home</a>
+          <a href="/books" class="active">Books</a>
+        </div>
+      </nav>
+
+      <main>
+        <a href="/books" class="back">← All books</a>
+        <div style="margin:.5rem 0">
+          <a href="{{ url_for('book_read', book_id=book.id) }}" class="cta-button">Read book</a>
+        </div>
+        <div class="book-detail" style="background:var(--card);padding:1rem;border-radius:10px;box-shadow:0 6px 20px rgba(2,6,23,0.06);display:flex;gap:1rem;align-items:flex-start">
+          {% if book.image %}
+            <img src="{{ url_for('static', filename='uploads/' ~ book.image) }}" alt="{{ book.title }} cover" style="width:200px;height:280px;object-fit:cover;border-radius:8px;flex:0 0 200px" />
+          {% endif %}
+          <div>
+            <h1 style="margin-top:0">{{ book.title }}</h1>
+            <p class="author">By {{ book.author }}</p>
+            <div class="desc" style="margin-top:.5rem;line-height:1.5">{{ book.description }}</div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+  </html>

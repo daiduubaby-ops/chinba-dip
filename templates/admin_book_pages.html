@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Manage pages - {{ book.title }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <nav class="nav">
+        <div class="nav-left"><a href="/" class="logo">Kids Book Club</a></div>
+        <div class="nav-right"><a href="/admin/books">Back</a> <a href="/logout">Logout</a></div>
+      </nav>
+      <main>
+        <h1>Manage pages for: {{ book.title }}</h1>
+
+        <section>
+          <h3>Add pages</h3>
+          <form method="post" enctype="multipart/form-data">
+            <input name="pages" type="file" accept="image/*" multiple />
+            <button type="submit">Upload</button>
+          </form>
+        </section>
+
+        <section style="margin-top:1rem">
+          <h3>Existing pages</h3>
+          {% if pages %}
+            <div style="display:flex;flex-direction:column;gap:.75rem">
+            {% for p in pages %}
+              <div style="display:flex;gap:.75rem;align-items:center">
+                <div style="width:140px;height:100px;flex:0 0 140px;display:flex;align-items:center;justify-content:center;border:1px solid #eee;background:#fff;padding:6px">
+                  <img src="{{ url_for('static', filename='uploads/' ~ book.id ~ '/' ~ p.filename) }}" alt="page {{ p.page_number }}" style="max-width:128px;max-height:88px;display:block" onerror="this.style.opacity=0.6;this.title='Failed to load'" />
+                </div>
+                <div style="flex:1">
+                  <div><strong>#{{ p.page_number }}</strong> {{ p.filename }}</div>
+                </div>
+                <div style="flex:0 0 auto;display:flex;gap:.25rem">
+                  <form method="post" action="{{ url_for('admin_book_page_move', book_id=book.id, page_id=p.id) }}">
+                    <input type="hidden" name="direction" value="up" />
+                    <button type="submit" title="Move up">↑</button>
+                  </form>
+                  <form method="post" action="{{ url_for('admin_book_page_move', book_id=book.id, page_id=p.id) }}">
+                    <input type="hidden" name="direction" value="down" />
+                    <button type="submit" title="Move down">↓</button>
+                  </form>
+                  <form method="post" action="{{ url_for('admin_book_page_delete', book_id=book.id, page_id=p.id) }}" onsubmit="return confirm('Delete this page?');">
+                    <button type="submit" class="delete">Delete</button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+            </div>
+          {% else %}
+            <div><em>No pages uploaded yet.</em></div>
+          {% endif %}
+        </section>
+      </main>
+    </div>
+  </body>
+  </html>
