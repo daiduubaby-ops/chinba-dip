@@ -38,7 +38,7 @@ def books():
         ]
     finally:
         conn.close()
-    return render_template('books.html', books=books)
+    return render_template('books.html', books=books )
 
 
 @app.route('/add', methods=['POST'])
