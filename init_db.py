@@ -23,6 +23,36 @@ def init_db(path=None):
         content TEXT
     )
     ''')
+    # books table for listing
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS books (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        author TEXT,
+        description TEXT,
+        image TEXT
+    )
+    ''')
+    # book_pages table stores uploaded page images for a book in display order
+    cur.execute('''
+    CREATE TABLE IF NOT EXISTS book_pages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        book_id INTEGER NOT NULL,
+        filename TEXT NOT NULL,
+        page_number INTEGER NOT NULL,
+        FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
+    )
+    ''')
+    # If the books table exists but doesn't have an image column, add it
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='books'")
+    if cur.fetchone() is not None:
+        cur.execute("PRAGMA table_info(books)")
+        cols = [r[1] for r in cur.fetchall()]
+        if 'image' not in cols:
+            try:
+                cur.execute('ALTER TABLE books ADD COLUMN image TEXT')
+            except Exception:
+                pass
     # users table for authentication (name, age, password_hash)
     cur.execute('''
     CREATE TABLE IF NOT EXISTS users (
