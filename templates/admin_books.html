@@ -36,16 +36,27 @@
 
         <section class="books-grid">
           {% for b in books %}
-            <a class="book-card" href="{{ url_for('book_detail', book_id=b.id) }}">
-              <h3>{{ b.title }}</h3>
-              <p class="author">{{ b.author }}</p>
-              <p class="desc">{{ b.description }}</p>
-            </a>
-            <div style="display:flex;gap:.5rem;align-items:center">
-              <a class="button" href="{{ url_for('admin_book_pages', book_id=b.id) }}">Manage pages</a>
-              <form method="post" action="/admin/books/delete/{{ b.id }}" onsubmit="return confirm('Delete this book?');">
-                <button class="delete" type="submit">Delete</button>
-              </form>
+            <div class="admin-book">
+              <div class="admin-book-cover">
+                <a class="book-card" href="{{ url_for('book_detail', book_id=b.id) }}">
+                  {% if b.image %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ b.image) }}" alt="{{ b.title }} cover" />
+                  {% else %}
+                    <div class="no-cover">No cover</div>
+                  {% endif %}
+                <div class="admin-book-info">
+                    <h3 style="margin:.5rem 0 0">{{ b.title }}</h3>
+                    <p class="author">{{ b.author }}</p>
+                    <div class="admin-desc"><pre style="white-space:pre-wrap;margin:0;padding:8px;border:1px solid #e5e7eb;border-radius:6px;background:#fff">{{ b.description }}</pre></div>
+                  </div>
+                </a>
+                <div class="admin-book-actions">
+                  <a class="button" href="{{ url_for('admin_book_pages', book_id=b.id) }}">Manage pages</a>
+                  <form method="post" action="/admin/books/delete/{{ b.id }}" onsubmit="return confirm('Delete this book?');">
+                    <button class="delete" type="submit">Delete</button>
+                  </form>
+                </div>
+              </div>
             </div>
           {% endfor %}
         </section>
@@ -54,3 +65,4 @@
     </div>
   </body>
   </html>
+  <script src="/static/admin_books.js"></script>

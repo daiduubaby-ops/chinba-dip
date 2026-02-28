@@ -124,3 +124,20 @@ h1{margin-top:0}
 .book-card:active{transform:translateY(-2px)}
 .book-card:link,.book-card:visited{color:inherit}
 .back{display:inline-block;margin-bottom:.5rem;color:var(--accent);text-decoration:none}
+
+/* Admin books layout: keep card and actions in one row */
+.admin-book{display:flex;gap:12px;align-items:flex-start}
+/* new admin layout: cover+actions on left, info on right */
+.admin-book{display:flex;gap:12px;align-items:flex-start}
+.admin-book-cover{flex:0 0 220px;display:flex;flex-direction:column;gap:8px}
+.admin-book-info{flex:1}
+.admin-book-actions{display:flex;flex-direction:column;gap:8px}
+.admin-book-actions .button{display:inline-block}
+.admin-book .no-cover{width:200px;height:160px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;margin-bottom:.5rem}
+.admin-book-cover img{width:200px;height:160px;object-fit:cover;border-radius:8px}
+/* Admin description collapse */
+.admin-desc{max-height:4.5em;overflow:hidden;position:relative;color:#374151}
+.admin-desc::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1.4em;background:linear-gradient(180deg, rgba(255,255,255,0), #fff)}
+.admin-desc.expanded{max-height:none}
+.admin-desc.expanded::after{display:none}
+.admin-see-more{background:none;border:none;color:var(--accent);cursor:pointer;padding:0;font-weight:600;margin-top:6px}
