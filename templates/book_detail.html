@@ -13,8 +13,16 @@
           <a href="/" class="logo">Kids Book Club</a>
         </div>
         <div class="nav-right">
-          <a href="/">Home</a>
-          <a href="/books" class="active">Books</a>
+          {% if session.get('username') %}
+            <span class="profile-pill">{{ session.username }}</span>
+            <a href="/books" class="active">Books</a>
+            <a href="/profile">Profile</a>
+            <a href="/logout">Logout</a>
+          {% else %}
+            <a href="/">Home</a>
+            <a href="/books" class="active">Books</a>
+            <a href="/login" class="login-button">Log in</a>
+          {% endif %}
         </div>
       </nav>
 

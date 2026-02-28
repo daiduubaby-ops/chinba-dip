@@ -19,6 +19,7 @@
           {% if session.get('username') %}
             <span class="profile-pill">{{ session.username }}</span>
             <a href="/books">Books</a>
+            <a href="/profile">Profile</a>
             <a href="/logout">Logout</a>
           {% else %}
             <a href="/books">Books</a>

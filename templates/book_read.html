@@ -39,6 +39,13 @@
         </div>
         <div class="nav-right">
           <a href="/books">Books</a>
+          {% if session.get('username') %}
+            <span class="profile-pill">{{ session.username }}</span>
+            <a href="/profile">Profile</a>
+            <a href="/logout">Logout</a>
+          {% else %}
+            <a href="/login" class="login-button">Log in</a>
+          {% endif %}
         </div>
       </nav>
 
@@ -172,5 +179,46 @@
 
       render()
     </script>
+    {% if session.get('user_id') %}
+    <script>
+      // Start a reading session when the reader loads and stop on unload.
+      (function(){
+        let readerSessionId = null
+        const bookId = {{ book.id | tojson }}
+
+        function startSession(){
+          try{
+            fetch('/reading/start', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              credentials: 'same-origin',
+              body: JSON.stringify({book_id: bookId})
+            }).then(r=>r.json()).then(j=>{ if(j && j.session_id) readerSessionId = j.session_id }).catch(()=>{})
+          }catch(e){}
+        }
+
+        function stopSession(){
+          try{
+            if(!readerSessionId) return
+            fetch('/reading/stop', {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              credentials: 'same-origin',
+              body: JSON.stringify({session_id: readerSessionId}),
+              keepalive: true
+            }).catch(()=>{})
+          }catch(e){}
+        }
+
+        // start immediately
+        startSession()
+
+        // attempt to stop when the page is unloaded
+        window.addEventListener('beforeunload', stopSession)
+        // also stop when the document becomes hidden (user switches tabs) to be conservative
+        document.addEventListener('visibilitychange', function(){ if(document.hidden) stopSession() })
+      })()
+    </script>
+    {% endif %}
   </body>
   </html>

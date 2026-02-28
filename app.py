@@ -1,6 +1,7 @@
 import os
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+import time
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__, instance_relative_config=True)
@@ -18,6 +19,106 @@ def get_db_connection():
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def _reading_table_columns(conn):
+    """Return a dict of column info for reading_sessions: name -> {notnull, dflt_value}
+    Falls back to an empty dict if the table doesn't exist or PRAGMA fails."""
+    try:
+        cur = conn.cursor()
+        cur.execute("PRAGMA table_info(reading_sessions)")
+        cols = {}
+        for r in cur.fetchall():
+            # PRAGMA returns: cid, name, type, notnull, dflt_value, pk
+            name = r[1]
+            notnull = bool(r[3])
+            dflt = r[4]
+            cols[name] = {'notnull': notnull, 'dflt': dflt}
+        return cols
+    except Exception:
+        return {}
+
+
+def ensure_reading_sessions_schema():
+    """Ensure the reading_sessions table has the expected columns (started_at, ended_at, duration_seconds).
+    If older columns (start_time, end_time) exist, copy their values into the new columns.
+    This makes the app tolerant of older database schemas that used different column names.
+    """
+    conn = None
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='reading_sessions'")
+        if cur.fetchone() is None:
+            # no table yet; nothing to migrate here
+            conn.close()
+            return
+        cur.execute("PRAGMA table_info(reading_sessions)")
+        existing = [r[1] for r in cur.fetchall()]
+
+        # Add missing columns (SQLite supports ADD COLUMN)
+        if 'started_at' not in existing:
+            try:
+                cur.execute('ALTER TABLE reading_sessions ADD COLUMN started_at INTEGER')
+            except Exception:
+                pass
+        if 'ended_at' not in existing:
+            try:
+                cur.execute('ALTER TABLE reading_sessions ADD COLUMN ended_at INTEGER')
+            except Exception:
+                pass
+        if 'duration_seconds' not in existing:
+            try:
+                cur.execute('ALTER TABLE reading_sessions ADD COLUMN duration_seconds INTEGER')
+            except Exception:
+                pass
+
+        # If older column names exist, copy values across.
+        # Use UPDATE ... WHERE ... to avoid overwriting existing migrated values.
+        if 'start_time' in existing:
+            try:
+                cur.execute('UPDATE reading_sessions SET started_at = start_time WHERE started_at IS NULL')
+            except Exception:
+                pass
+        if 'end_time' in existing:
+            try:
+                cur.execute('UPDATE reading_sessions SET ended_at = end_time WHERE ended_at IS NULL')
+            except Exception:
+                pass
+
+        conn.commit()
+    except Exception:
+        try:
+            if conn:
+                conn.rollback()
+        except Exception:
+            pass
+    finally:
+        try:
+            if conn:
+                conn.close()
+        except Exception:
+            pass
+
+
+# Ensure DB schema is compatible on startup (helps for existing older DBs)
+try:
+    ensure_reading_sessions_schema()
+except Exception:
+    # avoid crashing the import if migrations fail for any reason
+    pass
+
+
+@app.template_filter('datetimeformat')
+def datetimeformat(value):
+    """Format an integer epoch timestamp into a readable string."""
+    try:
+        import datetime
+        if value is None:
+            return ''
+        return datetime.datetime.fromtimestamp(int(value)).strftime('%Y-%m-%d %H:%M:%S')
+    except Exception:
+        return str(value)
 
 
 @app.route('/')
@@ -375,6 +476,109 @@ def logout():
     session.clear()
     flash('You have been logged out.')
     return redirect(url_for('index'))
+
+
+@app.route('/reading/start', methods=['POST'])
+def reading_start():
+    """Start a reading session for the current user and book.
+    Expects JSON: {"book_id": <int>} Returns JSON {session_id, started_at}
+    """
+    if not session.get('user_id'):
+        return jsonify({'error': 'authentication required'}), 401
+    data = request.get_json() or {}
+    book_id = data.get('book_id')
+    if not book_id:
+        return jsonify({'error': 'book_id required'}), 400
+    started_at = int(time.time())
+    conn = get_db_connection()
+    cur = conn.cursor()
+    # Some older databases used column names start_time / end_time and may have NOT NULL constraints.
+    # To be tolerant, detect existing columns and include start_time if present so INSERT doesn't fail.
+    try:
+        cur.execute("PRAGMA table_info(reading_sessions)")
+        existing = [r[1] for r in cur.fetchall()]
+    except Exception:
+        existing = []
+
+    cols = ['user_id', 'book_id', 'started_at']
+    placeholders = ['?', '?', '?']
+    vals = [session['user_id'], book_id, started_at]
+    if 'start_time' in existing:
+        cols.append('start_time')
+        placeholders.append('?')
+        vals.append(started_at)
+
+    sql = f"INSERT INTO reading_sessions ({', '.join(cols)}) VALUES ({', '.join(placeholders)})"
+    cur.execute(sql, tuple(vals))
+    session_id = cur.lastrowid
+    conn.commit()
+    conn.close()
+    return jsonify({'session_id': session_id, 'started_at': started_at})
+
+
+@app.route('/reading/stop', methods=['POST'])
+def reading_stop():
+    """Stop a reading session. Expects JSON: {"session_id": <int>} Returns JSON with duration."""
+    if not session.get('user_id'):
+        return jsonify({'error': 'authentication required'}), 401
+    data = request.get_json() or {}
+    session_id = data.get('session_id')
+    if not session_id:
+        return jsonify({'error': 'session_id required'}), 400
+    ended_at = int(time.time())
+    conn = get_db_connection()
+    cur = conn.cursor()
+    row = cur.execute('SELECT id, user_id, started_at, ended_at FROM reading_sessions WHERE id = ?', (session_id,)).fetchone()
+    if row is None:
+        conn.close()
+        return jsonify({'error': 'session not found'}), 404
+    if row['user_id'] != session['user_id']:
+        conn.close()
+        return jsonify({'error': 'forbidden'}), 403
+    if row['ended_at'] is not None:
+        conn.close()
+        return jsonify({'error': 'already stopped'}), 400
+    duration = ended_at - row['started_at']
+    cur.execute('UPDATE reading_sessions SET ended_at = ?, duration_seconds = ? WHERE id = ?', (ended_at, duration, session_id))
+    conn.commit()
+    conn.close()
+    return jsonify({'session_id': session_id, 'ended_at': ended_at, 'duration_seconds': duration})
+
+
+@app.route('/profile')
+def profile():
+    if not session.get('user_id'):
+        flash('Please log in to view your profile.')
+        return redirect(url_for('login'))
+    user_id = session['user_id']
+    conn = get_db_connection()
+    # Select only the most recent session per book so the same book doesn't appear multiple times
+    rows = conn.execute('''
+        SELECT rs.id, rs.book_id, rs.started_at, rs.ended_at, rs.duration_seconds, b.title, b.image as image
+        FROM reading_sessions rs
+        JOIN (
+            SELECT book_id, MAX(started_at) AS max_started
+            FROM reading_sessions
+            WHERE user_id = ?
+            GROUP BY book_id
+        ) m ON rs.book_id = m.book_id AND rs.started_at = m.max_started
+        LEFT JOIN books b ON b.id = rs.book_id
+        WHERE rs.user_id = ?
+        ORDER BY rs.started_at DESC
+    ''', (user_id, user_id)).fetchall()
+    sessions = [dict(r) for r in rows]
+    agg = conn.execute('''
+        SELECT b.id as book_id, b.title, b.image as image, COALESCE(SUM(rs.duration_seconds),0) as total_seconds
+        FROM books b
+        LEFT JOIN reading_sessions rs ON rs.book_id = b.id AND rs.user_id = ?
+        GROUP BY b.id, b.title
+        HAVING total_seconds > 0
+        ORDER BY total_seconds DESC
+    ''', (user_id,)).fetchall()
+    totals = [dict(r) for r in agg]
+    total_overall = sum(r['total_seconds'] for r in totals) if totals else 0
+    conn.close()
+    return render_template('profile.html', sessions=sessions, totals=totals, total_overall=total_overall)
 
 
 if __name__ == '__main__':

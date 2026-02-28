@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ session.username }} — Profile</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <nav class="nav">
+        <div class="nav-left"><a href="/" class="logo">Kids Book Club</a></div>
+        <div class="nav-right">
+          <span class="profile-pill">{{ session.username }}</span>
+          <a href="/books">Books</a>
+          <a href="/logout">Logout</a>
+        </div>
+      </nav>
+
+      <main>
+        <a href="/" class="back">← Home</a>
+        <h1>Your Profile</h1>
+
+        <section style="margin-top:1rem">
+          <h2>Reading history</h2>
+          {% if sessions and sessions|length > 0 %}
+            <div class="card-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:8px">
+              {% for s in sessions %}
+                <div class="card" style="background:var(--card);padding:8px;border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;box-shadow:0 6px 18px rgba(2,6,23,0.06)">
+                  {% set img = s.image %}
+                  {% if img %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ img) }}" alt="{{ s.title }} cover" style="width:100%;height:160px;object-fit:cover;border-radius:6px" />
+                  {% else %}
+                    <div style="width:100%;height:160px;background:#f3f4f6;border-radius:6px"></div>
+                  {% endif %}
+                  <div style="font-weight:600">{{ s.title or ('#' ~ s.book_id) }}</div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p>No reading sessions yet.</p>
+          {% endif %}
+        </section>
+
+        <section style="margin-top:1rem">
+          <h2>Total reading time per book</h2>
+          {% if totals and totals|length > 0 %}
+            <div class="card-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:8px">
+              {% for t in totals %}
+                <div class="card" style="background:var(--card);padding:10px;border-radius:8px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 18px rgba(2,6,23,0.06)">
+                  {% if t.image %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ t.image) }}" alt="{{ t.title }} cover" style="width:64px;height:88px;object-fit:cover;border-radius:6px;flex:0 0 64px" />
+                  {% else %}
+                    <div style="width:64px;height:88px;background:#f3f4f6;border-radius:6px;flex:0 0 64px"></div>
+                  {% endif %}
+                  <div style="flex:1">
+                    <div style="font-weight:600">{{ t.title }}</div>
+                    <div style="color:#6b7280;margin-top:6px">{{ (t.total_seconds // 60) }}m {{ (t.total_seconds % 60) }}s</div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+            <p style="margin-top:12px"><strong>Overall:</strong> {{ (total_overall // 60) }}m {{ (total_overall % 60) }}s</p>
+          {% else %}
+            <p>No recorded durations yet.</p>
+          {% endif %}
+        </section>
+      </main>
+    </div>
+  </body>
+  </html>
