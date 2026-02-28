@@ -28,18 +28,11 @@
       <div class="books-grid">
         {% if books %}
           {% for book in books %}
-        <a class="book-card" href="{{ url_for('book_detail', book_id=book.id) }}">
-          {% if book.image %}
-            <img src="{{ url_for('static', filename='uploads/' ~ book.image) }}" alt="{{ book.title }} cover" />
-          {% else %}
-            <div style="width:100%;height:160px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;margin-bottom:.5rem">No cover</div>
-          {% endif %}
-          <div style="padding-top:.25rem">
-            <h3>{{ book.title }}</h3>
-            <p class="author">{{ book.author }}</p>
-            <p class="desc">{{ book.description }}</p>
-          </div>
-        </a>
+            <div class="book-card">
+              <h3>{{ book.title }}</h3>
+              <p class="author">{{ book.author or 'Unknown author' }}</p>
+              <p class="desc">{{ book.description }}</p>
+            </div>
           {% endfor %}
         {% else %}
           <p>No books available yet.</p>

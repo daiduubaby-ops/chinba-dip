@@ -6,9 +6,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__, instance_relative_config=True)
 # secret key for session management; in production set via environment
 app.secret_key = os.environ.get('SECRET_KEY', 'dev_secret_key')
-# admin password (can be set via environment ADMIN_PASSWORD)
-# default admin password requested by user
-ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '0247790208')
 # ensure the instance folder exists (where the sqlite DB will live)
 os.makedirs(app.instance_path, exist_ok=True)
 
@@ -28,251 +25,20 @@ def index():
 
 @app.route('/books')
 def books():
-    # show list of books from the DB
+    # try to read a books table; if it doesn't exist, return placeholder list
     conn = get_db_connection()
-    # include the image column so templates can show uploaded covers
-    rows = conn.execute('SELECT id, title, author, description, image FROM books ORDER BY id DESC').fetchall()
-    books = [dict(r) for r in rows]
-    conn.close()
-    return render_template('books.html', books=books)
-
-
-@app.route('/books/<int:book_id>')
-def book_detail(book_id):
-    """Show a single book's details on its own page."""
-    conn = get_db_connection()
-    row = conn.execute('SELECT id, title, author, description, image FROM books WHERE id = ?', (book_id,)).fetchone()
-    conn.close()
-    if row is None:
-        flash('Book not found.')
-        return redirect(url_for('books'))
-    book = dict(row)
-    return render_template('book_detail.html', book=book)
-@app.route('/books/<int:book_id>/read')
-def book_read(book_id):
-    """Reader view: load book and its pages and render the reader template."""
-    conn = get_db_connection()
-    row = conn.execute('SELECT id, title, author, description FROM books WHERE id = ?', (book_id,)).fetchone()
-    conn.close()
-    if row is None:
-        flash('Book not found.')
-        return redirect(url_for('books'))
-    book = dict(row)
-    # load page URLs to pass into the template for immediate rendering
-    conn = get_db_connection()
-    rows = conn.execute('SELECT filename FROM book_pages WHERE book_id = ? ORDER BY page_number ASC', (book_id,)).fetchall()
-    conn.close()
-    files = [r['filename'] for r in rows]
-    urls = [url_for('static', filename=f'uploads/{book_id}/{fn}') for fn in files]
-    return render_template('book_read.html', book=book, pages=urls)
-
-
-@app.route('/books/<int:book_id>/pages')
-def book_pages(book_id):
-    """Return JSON list of page image URLs for the reader JS."""
-    conn = get_db_connection()
-    rows = conn.execute('SELECT filename FROM book_pages WHERE book_id = ? ORDER BY page_number ASC', (book_id,)).fetchall()
-    conn.close()
-    files = [r['filename'] for r in rows]
-    # construct URLs relative to /static/uploads/<book_id>/filename
-    urls = [url_for('static', filename=f'uploads/{book_id}/{fn}') for fn in files]
-    from flask import jsonify
-    return jsonify({'pages': urls})
-
-
-# -- Admin routes to manage books (simple, no separate admin user for demo) --
-@app.route('/admin/books')
-def admin_books():
-    # require admin password/session
-    if not session.get('is_admin'):
-        return redirect(url_for('admin_login'))
-    conn = get_db_connection()
-    # include image column so admin list can reflect uploaded covers (if desired later)
-    rows = conn.execute('SELECT id, title, author, description, image FROM books ORDER BY id DESC').fetchall()
-    books = [dict(r) for r in rows]
-    conn.close()
-    return render_template('admin_books.html', books=books)
-
-
-@app.route('/admin/books/<int:book_id>/pages', methods=['GET', 'POST'])
-def admin_book_pages(book_id):
-    # only accessible to admin
-    if not session.get('is_admin'):
-        return redirect(url_for('admin_login'))
-
-    conn = get_db_connection()
-    row = conn.execute('SELECT id, title FROM books WHERE id = ?', (book_id,)).fetchone()
-    if row is None:
-        conn.close()
-        flash('Book not found.')
-        return redirect(url_for('admin_books'))
-
-    if request.method == 'POST':
-        # allow uploading additional pages and reordering isn't implemented here
-        pages = request.files.getlist('pages')
-        if pages:
-            uploads_dir = os.path.join(app.static_folder, 'uploads')
-            book_dir = os.path.join(uploads_dir, str(book_id))
-            os.makedirs(book_dir, exist_ok=True)
-            cur = conn.cursor()
-            # determine next page number
-            cur.execute('SELECT COALESCE(MAX(page_number), 0) FROM book_pages WHERE book_id = ?', (book_id,))
-            start = cur.fetchone()[0] or 0
-            pnum = start + 1
-            for p in pages:
-                if p and p.filename:
-                    safe_name = os.path.basename(p.filename)
-                    name = f"{pnum:03d}_{safe_name}"
-                    path = os.path.join(book_dir, name)
-                    p.save(path)
-                    cur.execute('INSERT INTO book_pages (book_id, filename, page_number) VALUES (?, ?, ?)', (book_id, name, pnum))
-                    pnum += 1
-            conn.commit()
-        conn.close()
-        return redirect(url_for('admin_book_pages', book_id=book_id))
-
-    rows = conn.execute('SELECT id, filename, page_number FROM book_pages WHERE book_id = ? ORDER BY page_number ASC', (book_id,)).fetchall()
-    pages = [dict(r) for r in rows]
-    conn.close()
-    return render_template('admin_book_pages.html', book=dict(row), pages=pages)
-
-
-@app.route('/admin/books/<int:book_id>/pages/delete/<int:page_id>', methods=['POST'])
-def admin_book_page_delete(book_id, page_id):
-    if not session.get('is_admin'):
-        return redirect(url_for('admin_login'))
-    conn = get_db_connection()
-    cur = conn.cursor()
-    row = cur.execute('SELECT filename FROM book_pages WHERE id = ? AND book_id = ?', (page_id, book_id)).fetchone()
-    if row is None:
-        conn.close()
-        flash('Page not found.')
-        return redirect(url_for('admin_book_pages', book_id=book_id))
-    filename = row['filename']
-    # delete file from disk if exists
-    file_path = os.path.join(app.static_folder, 'uploads', str(book_id), filename)
     try:
-        if os.path.exists(file_path):
-            os.remove(file_path)
+        rows = conn.execute('SELECT id, title, author, description FROM books ORDER BY id DESC').fetchall()
+        books = [dict(r) for r in rows]
     except Exception:
-        pass
-    cur.execute('DELETE FROM book_pages WHERE id = ? AND book_id = ?', (page_id, book_id))
-    conn.commit()
-    conn.close()
-    flash('Page deleted.')
-    return redirect(url_for('admin_book_pages', book_id=book_id))
-
-
-@app.route('/admin/books/<int:book_id>/pages/move/<int:page_id>', methods=['POST'])
-def admin_book_page_move(book_id, page_id):
-    if not session.get('is_admin'):
-        return redirect(url_for('admin_login'))
-    direction = request.form.get('direction')
-    if direction not in ('up','down'):
-        flash('Invalid move direction.')
-        return redirect(url_for('admin_book_pages', book_id=book_id))
-    conn = get_db_connection()
-    cur = conn.cursor()
-    row = cur.execute('SELECT id, page_number FROM book_pages WHERE id = ? AND book_id = ?', (page_id, book_id)).fetchone()
-    if row is None:
+        # fallback: show some sample books
+        books = [
+            { 'id': 1, 'title': 'The Little Red Hen', 'author': 'Traditional', 'description': 'A story about hard work and friendship.' },
+            { 'id': 2, 'title': 'The Very Hungry Caterpillar', 'author': 'Eric Carle', 'description': 'A caterpillar eats his way to becoming a butterfly.' }
+        ]
+    finally:
         conn.close()
-        flash('Page not found.')
-        return redirect(url_for('admin_book_pages', book_id=book_id))
-    cur_num = row['page_number']
-    if direction == 'up':
-        # find page with page_number immediately less than current
-        other = cur.execute('SELECT id, page_number FROM book_pages WHERE book_id = ? AND page_number < ? ORDER BY page_number DESC LIMIT 1', (book_id, cur_num)).fetchone()
-    else:
-        other = cur.execute('SELECT id, page_number FROM book_pages WHERE book_id = ? AND page_number > ? ORDER BY page_number ASC LIMIT 1', (book_id, cur_num)).fetchone()
-    if other is None:
-        conn.close()
-        flash('Cannot move further.')
-        return redirect(url_for('admin_book_pages', book_id=book_id))
-    # swap page_number values
-    try:
-        cur.execute('UPDATE book_pages SET page_number = ? WHERE id = ?', (-1, page_id))
-        cur.execute('UPDATE book_pages SET page_number = ? WHERE id = ?', (cur_num, other['id']))
-        cur.execute('UPDATE book_pages SET page_number = ? WHERE id = ?', (other['page_number'], page_id))
-        conn.commit()
-    except Exception:
-        conn.rollback()
-    conn.close()
-    return redirect(url_for('admin_book_pages', book_id=book_id))
-
-
-@app.route('/admin/login', methods=['GET', 'POST'])
-def admin_login():
-    if request.method == 'POST':
-        pw = request.form.get('password', '')
-        if pw == ADMIN_PASSWORD:
-            session['is_admin'] = True
-            flash('Admin signed in.')
-            return redirect(url_for('admin_books'))
-        else:
-            flash('Invalid admin password.')
-            return redirect(url_for('admin_login'))
-    return render_template('admin_login.html')
-
-
-@app.route('/admin/logout')
-def admin_logout():
-    session.pop('is_admin', None)
-    flash('Admin logged out.')
-    return redirect(url_for('index'))
-
-
-@app.route('/admin/books/add', methods=['POST'])
-def admin_books_add():
-    title = request.form.get('title', '').strip()
-    author = request.form.get('author', '').strip()
-    description = request.form.get('description', '').strip()
-    image_file = request.files.get('image')
-    image_filename = None
-    if image_file and image_file.filename:
-        uploads_dir = os.path.join(app.static_folder, 'uploads')
-        os.makedirs(uploads_dir, exist_ok=True)
-        # simple filename sanitization
-        fname = os.path.basename(image_file.filename)
-        image_filename = fname
-        image_path = os.path.join(uploads_dir, image_filename)
-        image_file.save(image_path)
-
-    # handle multiple page uploads (PNG expected)
-    pages = request.files.getlist('pages')
-
-    if title:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute('INSERT INTO books (title, author, description, image) VALUES (?, ?, ?, ?)', (title, author, description, image_filename))
-        book_id = cur.lastrowid
-        # save page records after creating book
-        uploads_dir = os.path.join(app.static_folder, 'uploads')
-        book_dir = os.path.join(uploads_dir, str(book_id))
-        if pages:
-            os.makedirs(book_dir, exist_ok=True)
-            page_num = 1
-            for p in pages:
-                if p and p.filename:
-                    # keep original filename but prefix with page number to avoid collisions
-                    safe_name = os.path.basename(p.filename)
-                    # ensure png extension
-                    name = f"{page_num:03d}_{safe_name}"
-                    path = os.path.join(book_dir, name)
-                    p.save(path)
-                    cur.execute('INSERT INTO book_pages (book_id, filename, page_number) VALUES (?, ?, ?)', (book_id, name, page_num))
-                    page_num += 1
-        conn.commit()
-        conn.close()
-    return redirect(url_for('admin_books'))
-
-
-@app.route('/admin/books/delete/<int:book_id>', methods=['POST'])
-def admin_books_delete(book_id):
-    conn = get_db_connection()
-    conn.execute('DELETE FROM books WHERE id = ?', (book_id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('admin_books'))
+    return render_template('books.html', books=books )
 
 
 @app.route('/add', methods=['POST'])
