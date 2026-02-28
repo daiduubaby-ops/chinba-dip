@@ -25,6 +25,8 @@
         overflow:hidden;
       }
       .page img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+      /* single page view: take full width */
+      .page.single{flex:0 0 100%}
       .reader-controls{margin:1rem 0;display:flex;gap:.5rem;align-items:center}
       .primary{background:var(--accent);color:#fff;padding:.5rem .8rem;border-radius:6px;border:none}
       /* Page number input */
@@ -54,11 +56,13 @@
         <h1>Reading: {{ book.title }}</h1>
 
         <div class="reader-controls">
-          <button id="prev" class="primary">Prev</button>
-          <div style="font-weight:600">Page <span id="pageNum">1</span></div>
-          <input type="number" id="pageInput" min="1" value="1" />
-          <div id="pageOf" style="color:#374151;margin-left:4px">/ 0</div>
-          <button id="next" class="primary">Next</button>
+        <button id="prev" class="primary">Prev</button>
+        <button id="toggleSingle" class="primary">Single page</button>
+        <button id="fullscreenBtn" class="primary">Full page</button>
+        <div style="font-weight:600">Page <span id="pageNum">1</span></div>
+        <input type="number" id="pageInput" min="1" value="1" />
+        <div id="pageOf" style="color:#374151;margin-left:4px">/ 0</div>
+        <button id="next" class="primary">Next</button>
         </div>
 
         <div class="reader" id="reader">
@@ -80,7 +84,7 @@
       </main>
     </div>
 
-    <script>
+      <script>
       // Reader that displays uploaded book pages (images) as a single fullscreen-like page.
       // Read pages data from the JSON script tag (safe and avoids JS parsing issues)
       let pages = [];
@@ -100,10 +104,13 @@
 
       // Setup variables
       let pageIndex = 0 // zero-based index of left page
+      let singlePageMode = false
       const pageNum = document.getElementById('pageNum')
       const pageInput = document.getElementById('pageInput')
       const pageOf = document.getElementById('pageOf')
       const reader = document.getElementById('reader')
+      const toggleSingle = document.getElementById('toggleSingle')
+      const fullscreenBtn = document.getElementById('fullscreenBtn')
 
       function clampIndex(i){
         return Math.max(0, Math.min(i, Math.max(0, pages.length - 1)))
@@ -111,27 +118,38 @@
 
       function render(){
         reader.innerHTML = ''
-        const left = document.createElement('div')
-        left.className = 'page'
-        const right = document.createElement('div')
-        right.className = 'page'
+        if(singlePageMode){
+          const single = document.createElement('div')
+          single.className = 'page single'
+          if(pages.length > pageIndex){
+            const img = document.createElement('img')
+            img.src = pages[pageIndex]
+            single.appendChild(img)
+          }
+          reader.appendChild(single)
+        } else {
+          const left = document.createElement('div')
+          left.className = 'page'
+          const right = document.createElement('div')
+          right.className = 'page'
 
-        // left page
-        if(pages.length > pageIndex){
-          const img = document.createElement('img')
-          img.src = pages[pageIndex]
-          left.appendChild(img)
+          // left page
+          if(pages.length > pageIndex){
+            const img = document.createElement('img')
+            img.src = pages[pageIndex]
+            left.appendChild(img)
+          }
+
+          // right page (next)
+          if(pages.length > pageIndex + 1){
+            const img = document.createElement('img')
+            img.src = pages[pageIndex + 1]
+            right.appendChild(img)
+          }
+
+          reader.appendChild(left)
+          reader.appendChild(right)
         }
-
-        // right page (next)
-        if(pages.length > pageIndex + 1){
-          const img = document.createElement('img')
-          img.src = pages[pageIndex + 1]
-          right.appendChild(img)
-        }
-
-        reader.appendChild(left)
-        reader.appendChild(right)
 
         pageNum.textContent = (pageIndex + 1)
         pageInput.value = (pageIndex + 1)
@@ -139,16 +157,25 @@
 
         // toggle prev/next disabled state
         document.getElementById('prev').disabled = (pageIndex <= 0)
-        document.getElementById('next').disabled = (pageIndex + 2 > pages.length - 1)
+        document.getElementById('next').disabled = (pageIndex + (singlePageMode ? 1 : 2) > pages.length - 1)
       }
 
       document.getElementById('prev').addEventListener('click', ()=>{
-        if(pageIndex - 2 >= 0){ pageIndex = clampIndex(pageIndex - 2); render() }
-        else { pageIndex = 0; render() }
+        if(singlePageMode){
+          if(pageIndex - 1 >= 0){ pageIndex = clampIndex(pageIndex - 1); render() }
+          else { pageIndex = 0; render() }
+        } else {
+          if(pageIndex - 2 >= 0){ pageIndex = clampIndex(pageIndex - 2); render() }
+          else { pageIndex = 0; render() }
+        }
       })
 
       document.getElementById('next').addEventListener('click', ()=>{
-        if(pageIndex + 2 < pages.length){ pageIndex = clampIndex(pageIndex + 2); render() }
+        if(singlePageMode){
+          if(pageIndex + 1 < pages.length){ pageIndex = clampIndex(pageIndex + 1); render() }
+        } else {
+          if(pageIndex + 2 < pages.length){ pageIndex = clampIndex(pageIndex + 2); render() }
+        }
       })
 
       pageInput.addEventListener('change', ()=>{
@@ -159,13 +186,22 @@
         render()
       })
 
-      // keyboard navigation (move by pairs)
+      // keyboard navigation
       window.addEventListener('keydown', (e)=>{
         if(e.key === 'ArrowLeft'){
-          if(pageIndex - 2 >= 0){ pageIndex = clampIndex(pageIndex - 2); render() }
-          else if(pageIndex > 0){ pageIndex = 0; render() }
+          if(singlePageMode){
+            if(pageIndex - 1 >= 0){ pageIndex = clampIndex(pageIndex - 1); render() }
+            else if(pageIndex > 0){ pageIndex = 0; render() }
+          } else {
+            if(pageIndex - 2 >= 0){ pageIndex = clampIndex(pageIndex - 2); render() }
+            else if(pageIndex > 0){ pageIndex = 0; render() }
+          }
         } else if(e.key === 'ArrowRight'){
-          if(pageIndex + 2 < pages.length){ pageIndex = clampIndex(pageIndex + 2); render() }
+          if(singlePageMode){
+            if(pageIndex + 1 < pages.length){ pageIndex = clampIndex(pageIndex + 1); render() }
+          } else {
+            if(pageIndex + 2 < pages.length){ pageIndex = clampIndex(pageIndex + 2); render() }
+          }
         }
       })
 
@@ -178,6 +214,29 @@
       }
 
       render()
+      // wire toggle and fullscreen controls
+      if(toggleSingle){
+        toggleSingle.addEventListener('click', ()=>{
+          singlePageMode = !singlePageMode
+          toggleSingle.textContent = singlePageMode ? 'Two page' : 'Single page'
+          // when switching to two-page view make sure left page index is even
+          if(!singlePageMode){ pageIndex = Math.max(0, pageIndex - (pageIndex % 2)) }
+          render()
+        })
+      }
+      if(fullscreenBtn){
+        fullscreenBtn.addEventListener('click', ()=>{
+          const el = document.getElementById('reader')
+          if(!el) return
+          if(document.fullscreenElement){
+            document.exitFullscreen().catch(()=>{})
+          } else {
+            if(el.requestFullscreen){ try{ el.requestFullscreen() }catch(e){} }
+            else if(el.webkitRequestFullscreen){ try{ el.webkitRequestFullscreen() }catch(e){} }
+            else if(el.msRequestFullscreen){ try{ el.msRequestFullscreen() }catch(e){} }
+          }
+        })
+      }
     </script>
     {% if session.get('user_id') %}
     <script>
