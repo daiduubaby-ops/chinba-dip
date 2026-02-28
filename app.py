@@ -138,6 +138,52 @@ def books():
     return render_template('books.html', books=books)
 
 
+@app.route('/search/suggest')
+def search_suggest():
+    """Return JSON suggestions for live autocomplete.
+    Query param: q
+    Returns up to 8 matches across title and author.
+    """
+    q = request.args.get('q', '').strip()
+    if not q:
+        return jsonify({'suggestions': []})
+    q_like = f"%{q}%"
+    conn = get_db_connection()
+    cur = conn.cursor()
+    rows = cur.execute('''
+        SELECT id, title, author, image
+        FROM books
+        WHERE title LIKE ? OR author LIKE ?
+        ORDER BY id DESC
+        LIMIT 8
+    ''', (q_like, q_like)).fetchall()
+    results = [{'id': r['id'], 'title': r['title'], 'author': r['author'], 'image': r['image']} for r in rows]
+    conn.close()
+    return jsonify({'suggestions': results})
+
+
+@app.route('/search')
+def search():
+    """Full-page search results. Query param: q"""
+    q = request.args.get('q', '').strip()
+    conn = get_db_connection()
+    if not q:
+        rows = conn.execute('SELECT id, title, author, description, image FROM books ORDER BY id DESC').fetchall()
+        books = [dict(r) for r in rows]
+        conn.close()
+        return render_template('books.html', books=books)
+    q_like = f"%{q}%"
+    rows = conn.execute('''
+        SELECT id, title, author, description, image
+        FROM books
+        WHERE title LIKE ? OR author LIKE ? OR description LIKE ?
+        ORDER BY id DESC
+    ''', (q_like, q_like, q_like)).fetchall()
+    books = [dict(r) for r in rows]
+    conn.close()
+    return render_template('books.html', books=books, query=q)
+
+
 @app.route('/books/<int:book_id>')
 def book_detail(book_id):
     """Show a single book's details on its own page."""

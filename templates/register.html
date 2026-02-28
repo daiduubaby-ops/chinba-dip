@@ -12,6 +12,10 @@
         <div class="nav-left">
           <a href="/" class="logo">Kids Book Club</a>
         </div>
+        <div class="nav-center">
+          <input id="nav-search" class="nav-search" placeholder="Search books, stories or authors" autocomplete="off" />
+          <div id="nav-suggestions" style="position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:40;display:none;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(2,6,23,0.08);overflow:hidden;width:360px"></div>
+        </div>
         <div class="nav-right">
           {% if session.get('username') %}
             <span class="profile-pill">{{ session.username }}</span>
@@ -55,3 +59,4 @@
     </div>
   </body>
   </html>
+  <script src="/static/search.js"></script>
