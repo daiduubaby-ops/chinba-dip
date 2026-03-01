@@ -3,17 +3,17 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ book.title }} - Kids Book Club</title>
+    <title>{{ book.title }} - Хүүхдийн Номын Клуб</title>
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
     <div class="container">
       <nav class="nav">
         <div class="nav-left">
-          <a href="/" class="logo">Kids Book Club</a>
+          <a href="/" class="logo">Хүүхдийн&nbsp;Номын&nbsp;Клуб</a>
         </div>
         <div class="nav-center">
-          <input id="nav-search" class="nav-search" placeholder="Ном, өгүүллэг эсвэл зохиогч хайх" autocomplete="off" />
+          <input id="nav-search" class="nav-search" placeholder="хайлт" autocomplete="off" />
           <div id="nav-suggestions" style="position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:40;display:none;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(2,6,23,0.08);overflow:hidden;width:360px"></div>
         </div>
         <div class="nav-right">
@@ -24,8 +24,8 @@
             <a href="/logout">Гарах</a>
           {% else %}
             <a href="/">Эхлэл</a>
-            <a href="/books" class="active">Books</a>
-            <a href="/login" class="login-button">Log in</a>
+            <a href="/books" class="active">Номнууд</a>
+            <a href="/login" class="login-button">Нэвтрэх</a>
           {% endif %}
         </div>
       </nav>
