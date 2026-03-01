@@ -40,11 +40,11 @@
           <a href="/" class="logo">Kids Book Club</a>
         </div>
         <div class="nav-right">
-          <a href="/books">Books</a>
+          <a href="/books">Номнууд</a>
           {% if session.get('username') %}
             <span class="profile-pill">{{ session.username }}</span>
-            <a href="/profile">Profile</a>
-            <a href="/logout">Logout</a>
+            <a href="/profile">Профайл</a>
+            <a href="/logout">Гарах</a>
           {% else %}
             <a href="/login" class="login-button">Log in</a>
           {% endif %}
@@ -52,13 +52,13 @@
       </nav>
 
       <main>
-        <a href="{{ url_for('book_detail', book_id=book.id) }}" class="back">← Back to details</a>
-        <h1>Reading: {{ book.title }}</h1>
+        <a href="{{ url_for('book_detail', book_id=book.id) }}" class="back">← Номны дэлгэрэнгүй руу буцах</a>
+        <h1>Уншиж байна: {{ book.title }}</h1>
 
         <div class="reader-controls">
-        <button id="prev" class="primary">Prev</button>
-        <button id="toggleSingle" class="primary">Single page</button>
-        <button id="fullscreenBtn" class="primary">Full page</button>
+        <button id="prev" class="primary">Өмнөх</button>
+        <button id="toggleSingle" class="primary">Нэг хуудас</button>
+        <button id="fullscreenBtn" class="primary">Бүх хуудас</button>
         <div style="font-weight:600">Page <span id="pageNum">1</span></div>
         <input type="number" id="pageInput" min="1" value="1" />
         <div id="pageOf" style="color:#374151;margin-left:4px">/ 0</div>

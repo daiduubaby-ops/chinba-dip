@@ -3,37 +3,37 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>All Books - Kids Book Club</title>
+    <title>Бүх ном - Хүүхдийн Номын Клуб</title>
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
     <div class="container">
       <nav class="nav">
         <div class="nav-left">
-          <a href="/" class="logo">Kids Book Club</a>
+          <a href="/" class="logo">Хүүхдийн Номын Клуб</a>
         </div>
         <div class="nav-center">
-          <input id="nav-search" class="nav-search" placeholder="Search books, stories or authors" autocomplete="off" />
+          <input id="nav-search" class="nav-search" placeholder="Ном, өгүүллэг эсвэл зохиогч хайх" autocomplete="off" />
           <div id="nav-suggestions" style="position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:40;display:none;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(2,6,23,0.08);overflow:hidden;width:360px"></div>
         </div>
         <div class="nav-right">
           {% if session.get('username') %}
             <span class="profile-pill">{{ session.username }}</span>
-            <a href="/books" class="active">Books</a>
-            <a href="/profile">Profile</a>
-            <a href="/logout">Logout</a>
+            <a href="/books" class="active">Номнууд</a>
+            <a href="/profile">Профайл</a>
+            <a href="/logout">Гарах</a>
           {% else %}
-            <a href="/" class="">Home</a>
-            <a href="/books" class="active">Books</a>
-            <a href="/#about">About</a>
-            <a href="/login" class="login-button">Log in</a>
+            <a href="/" class="">Эхлэл</a>
+            <a href="/books" class="active">Номнууд</a>
+            <a href="/#about">Тухай</a>
+            <a href="/login" class="login-button">Нэвтрэх</a>
           {% endif %}
         </div>
       </nav>
 
       <header>
-        <a href="/" class="back">← Home</a>
-        <h1>All Books</h1>
+        <a href="/" class="back">← Эхлэл</a>
+        <h1>Бүх ном</h1>
       </header>
 
       <div class="books-grid">
@@ -43,7 +43,7 @@
           {% if book.image %}
             <img src="{{ url_for('static', filename='uploads/' ~ book.image) }}" alt="{{ book.title }} cover" />
           {% else %}
-            <div style="width:100%;height:160px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;margin-bottom:.5rem">No cover</div>
+            <div style="width:100%;height:160px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;margin-bottom:.5rem">Давхар бүрхүүл байхгүй</div>
           {% endif %}
           <div style="padding-top:.25rem">
             <h3>{{ book.title }}</h3>
@@ -53,7 +53,7 @@
         </a>
           {% endfor %}
         {% else %}
-          <p>No books available yet.</p>
+          <p>Одоогоор ном алга байна.</p>
         {% endif %}
       </div>
     </div>

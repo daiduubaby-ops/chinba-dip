@@ -3,34 +3,34 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin - Manage Books</title>
+    <title>Админ - Ном удирдах</title>
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
     <div class="container">
       <nav class="nav">
         <div class="nav-left">
-          <a href="/" class="logo">Kids Book Club</a>
+          <a href="/" class="logo">Хүүхдийн Номын Клуб</a>
         </div>
         <div class="nav-right">
-          <a href="/books">Books</a>
-          <a href="/logout">Logout</a>
+          <a href="/books">Номнууд</a>
+          <a href="/logout">Гарах</a>
         </div>
       </nav>
 
       <main>
-        <h1>Manage books</h1>
+        <h1>Ном удирдах</h1>
 
         <section class="note-form">
-          <h3>Add a book</h3>
+          <h3>Ном нэмэх</h3>
           <form method="post" action="/admin/books/add" enctype="multipart/form-data">
-            <input name="title" placeholder="Title" required />
-            <input name="author" placeholder="Author" />
+            <input name="title" placeholder="Нэр" required />
+            <input name="author" placeholder="Зохиогч" />
             <!-- allow multiple page images (PNG recommended) -->
-            <label>Cover image (optional): <input name="image" type="file" accept="image/*" /></label>
-            <label>Book pages (PNG): <input name="pages" type="file" accept="image/png" multiple /></label>
-            <textarea name="description" placeholder="Description"></textarea>
-            <button type="submit">Add book</button>
+            <label>Давхар бүрхүүл (хийлж өгөгдөх): <input name="image" type="file" accept="image/*" /></label>
+            <label>Номын хуудас (PNG): <input name="pages" type="file" accept="image/png" multiple /></label>
+            <textarea name="description" placeholder="Тайлбар"></textarea>
+            <button type="submit">Ном нэмэх</button>
           </form>
         </section>
 
@@ -42,7 +42,7 @@
                   {% if b.image %}
                     <img src="{{ url_for('static', filename='uploads/' ~ b.image) }}" alt="{{ b.title }} cover" />
                   {% else %}
-                    <div class="no-cover">No cover</div>
+                    <div class="no-cover">Давхар бүрхүүл байхгүй</div>
                   {% endif %}
                 <div class="admin-book-info">
                     <h3 style="margin:.5rem 0 0">{{ b.title }}</h3>
@@ -51,9 +51,9 @@
                   </div>
                 </a>
                 <div class="admin-book-actions">
-                  <a class="button" href="{{ url_for('admin_book_pages', book_id=b.id) }}">Manage pages</a>
+                  <a class="button" href="{{ url_for('admin_book_pages', book_id=b.id) }}">Хуудас удирдах</a>
                   <form method="post" action="/admin/books/delete/{{ b.id }}" onsubmit="return confirm('Delete this book?');">
-                    <button class="delete" type="submit">Delete</button>
+                    <button class="delete" type="submit">Устгах</button>
                   </form>
                 </div>
               </div>

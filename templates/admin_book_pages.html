@@ -3,28 +3,28 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Manage pages - {{ book.title }}</title>
+    <title>Хуудас удирдах - {{ book.title }}</title>
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
     <div class="container">
       <nav class="nav">
-        <div class="nav-left"><a href="/" class="logo">Kids Book Club</a></div>
-        <div class="nav-right"><a href="/admin/books">Back</a> <a href="/logout">Logout</a></div>
+        <div class="nav-left"><a href="/" class="logo">Хүүхдийн Номын Клуб</a></div>
+        <div class="nav-right"><a href="/admin/books">Буцах</a> <a href="/logout">Гарах</a></div>
       </nav>
       <main>
-        <h1>Manage pages for: {{ book.title }}</h1>
+        <h1>"{{ book.title }}" номын хуудас удирдах</h1>
 
         <section>
-          <h3>Add pages</h3>
+        <h3>Хуудас нэмэх</h3>
           <form method="post" enctype="multipart/form-data">
             <input name="pages" type="file" accept="image/*" multiple />
-            <button type="submit">Upload</button>
+            <button type="submit">Ачааллах</button>
           </form>
         </section>
 
         <section style="margin-top:1rem">
-          <h3>Existing pages</h3>
+        <h3>Байгуулагдсан хуудас</h3>
           {% if pages %}
             <div style="display:flex;flex-direction:column;gap:.75rem">
             {% for p in pages %}
@@ -52,7 +52,7 @@
             {% endfor %}
             </div>
           {% else %}
-            <div><em>No pages uploaded yet.</em></div>
+            <div><em>Одоогоор ямар ч хуудас ачаалгаагүй байна.</em></div>
           {% endif %}
         </section>
       </main>

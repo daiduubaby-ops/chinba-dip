@@ -3,26 +3,26 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Sign in</title>
+    <title>Админ нэвтрэх</title>
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
     <div class="container">
       <nav class="nav">
         <div class="nav-left">
-          <a href="/" class="logo">Kids Book Club</a>
+          <a href="/" class="logo">Хүүхдийн Номын Клуб</a>
         </div>
         <div class="nav-center">
-          <input id="nav-search" class="nav-search" placeholder="Search books, stories or authors" autocomplete="off" />
+          <input id="nav-search" class="nav-search" placeholder="Ном, өгүүллэг эсвэл зохиогч хайх" autocomplete="off" />
           <div id="nav-suggestions" style="position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:40;display:none;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(2,6,23,0.08);overflow:hidden;width:360px"></div>
         </div>
         <div class="nav-right">
-          <a href="/books">Books</a>
+          <a href="/books">Номнууд</a>
         </div>
       </nav>
 
       <main class="auth card">
-        <div class="auth-card-header"><h1>Admin sign in</h1></div>
+        <div class="auth-card-header"><h1>Админ нэвтрэх</h1></div>
         <div class="auth-card-body">
           {% with messages = get_flashed_messages() %}
             {% if messages %}
@@ -35,10 +35,10 @@
           {% endwith %}
 
           <form method="post" action="/admin/login" class="auth-form">
-            <label>Admin password
-              <input name="password" type="password" required placeholder="Admin password" />
+            <label>Админы нууц үг
+              <input name="password" type="password" required placeholder="Админы нууц үг" />
             </label>
-            <button type="submit" class="primary">Sign in</button>
+            <button type="submit" class="primary">Нэвтрэх</button>
           </form>
         </div>
       </main>

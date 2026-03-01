@@ -3,14 +3,14 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login - Kids Book Club</title>
+    <title>Нэвтрэх - Хүүхдийн Номын Клуб</title>
     <link rel="stylesheet" href="/static/style.css">
   </head>
   <body>
     <div class="container">
       <nav class="nav">
         <div class="nav-left">
-          <a href="/" class="logo">Kids Book Club</a>
+          <a href="/" class="logo">Хүүхдийн Номын Клуб</a>
         </div>
         <div class="nav-right">
           {% if session.get('username') %}
@@ -27,7 +27,7 @@
 
       <main class="auth card">
         <div class="auth-card-header">
-          <h1>Log in to Kids Book Club</h1>
+          <h1>Хүүхдийн Номын Клуб руу нэвтрэх</h1>
         </div>
         <div class="auth-card-body">
         {% with messages = get_flashed_messages() %}
@@ -40,20 +40,20 @@
           {% endif %}
         {% endwith %}
         <div class="nav-center">
-          <input id="nav-search" class="nav-search" placeholder="Search books, stories or authors" autocomplete="off" />
+          <input id="nav-search" class="nav-search" placeholder="Ном, өгүүллэг эсвэл зохиогч хайх" autocomplete="off" />
           <div id="nav-suggestions" style="position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:40;display:none;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(2,6,23,0.08);overflow:hidden;width:360px"></div>
         </div>
         <form method="post" action="/login" class="auth-form">
-          <label>Name
-            <input name="name" required placeholder="e.g. Sara" />
+          <label>Нэр
+            <input name="name" required placeholder="жишээ: Сара" />
           </label>
-          <label>Password
-            <input name="password" type="password" required placeholder="Enter your password" />
+          <label>Нууц үг
+            <input name="password" type="password" required placeholder="Нууц үгээ оруулна уу" />
           </label>
-          <button type="submit" class="primary">Log in</button>
+          <button type="submit" class="primary">Нэвтрэх</button>
         </form>
 
-        <p class="muted">Don't have an account? <a href="/register">Create one</a> (name, age and password).</p>
+        <p class="muted">Бүртгэлгүй юу? <a href="/register">Шинээр үүсгээрэй</a> (нэр, нас болон нууц үг).</p>
         </div>
       </main>
     </div>
