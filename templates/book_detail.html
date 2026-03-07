@@ -41,7 +41,10 @@
           {% endif %}
           <div>
             <h1 style="margin-top:0">{{ book.title }}</h1>
-            <p class="author">By {{ book.author }}</p>
+            <p class="author">Зохиогч {{ book.author }}</p>
+            {% if book.category %}
+              <p style="margin:.25rem 0 0;color:#6b7280">{{ book.category }}</p>
+            {% endif %}
             <div class="desc" style="margin-top:.5rem;line-height:1.5">{{ book.description }}</div>
           </div>
         </div>

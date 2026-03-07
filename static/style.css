@@ -15,6 +15,7 @@ body{
 .container{
   max-width:800px;
   margin:0 auto;
+  position:relative; /* ensure decorations sit behind content */
 }
 h1{margin-top:0}
 .note-form{display:flex;flex-direction:column;gap:.5rem;background:var(--card);padding:1rem;border-radius:8px;box-shadow:0 1px 2px rgba(16,24,40,.05)}
@@ -90,6 +91,14 @@ h1{margin-top:0}
   .nav-right a{padding:.25rem .45rem}
 }
 
+/* Decorative side elements for kid-friendly edges on homepage */
+.edge-decor{position:fixed;top:120px;width:140px;height:140px;border-radius:50%;opacity:.18;z-index:0;pointer-events:none}
+.edge-left{left:12px;background:radial-gradient(circle at 30% 30%, #ff8aa2 0%, #ffd166 60%)}
+.edge-right{right:12px;background:radial-gradient(circle at 70% 70%, #60a5fa 0%, #86efac 60%)}
+
+/* ensure main content sits above decorations */
+.container, .nav, .hero, .book-card, .card{position:relative;z-index:1}
+
 /* Login button styling */
 .login-button{background:#ffd166;color:#1f2937;padding:.4rem .65rem;border-radius:999px;border:2px solid #ffb703;text-decoration:none;font-weight:600;margin-left:1rem}
 .login-button:hover{filter:brightness(.98);transform:translateY(-1px)}
@@ -119,10 +128,33 @@ h1{margin-top:0}
   border:1px solid rgba(15,23,42,0.03);
   -webkit-tap-highlight-color: transparent; /* remove mobile tap blue */
 }
+/* overlay image that sits above the card text */
+.book-card .card-overlay{
+  width:100%;
+  position:static; /* ensure image sits in normal document flow */
+  height:160px;
+  object-fit:cover;
+  border-radius:8px;
+  display:block;
+  margin-bottom:.6rem;
+  z-index:1;
+}
+.book-card .card-overlay[aria-hidden="true"]{display:none}
 .book-card img{border-radius:8px;display:block;width:100%;height:160px;object-fit:cover;margin-bottom:.5rem}
 .book-card h3{margin:.25rem 0}
+.book-card h3, .book-card .author, .book-card .desc{position:relative;z-index:1;transition:color .2s ease}
+
+/* remove overlay hover effects — text should sit under the image and always be readable */
+.book-card::before{display:none}
+.book-card:hover .card-overlay{transform:none;opacity:1}
 .book-card .author{color:var(--muted);font-size:.9rem;margin:.25rem 0}
 .book-card .desc{color:var(--muted);font-size:.95rem;max-height:3.6em;overflow:hidden;text-overflow:ellipsis}
+
+/* In the featured section show the full text (don't truncate) */
+#featured .book-card .desc{
+  max-height:none;
+  overflow:visible;
+}
 .book-card:hover{transform:translateY(-6px);box-shadow:0 10px 30px rgba(16,24,40,0.12)}
 .book-card:focus{outline:none;box-shadow:0 0 0 3px rgba(79,70,229,0.12)}
 .book-card:active{transform:translateY(-2px)}

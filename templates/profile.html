@@ -25,6 +25,32 @@
         <a href="/" class="back">← Эхлэл</a>
         <h1>Таны профайл</h1>
 
+        <div style="margin-top:0.5rem;padding:.6rem;background:var(--card);border-radius:8px;display:inline-block">
+          <div style="display:flex;gap:12px;align-items:center">
+            {% set user_img = None %}
+            {% set conn = namespace(val=None) %}
+            {% set user_img = None %}
+            {# try to fetch user's image filename from DB via session.user_id - but templates shouldn't run DB calls; instead, session may hold it. Fall back to default if not present. #}
+            <div style="width:64px;height:64px;flex:0 0 64px">
+              {% if session.get('user_image') %}
+                <img src="{{ url_for('static', filename='uploads/' ~ session.user_image) }}" alt="profile" style="width:64px;height:64px;object-fit:cover;border-radius:50%" />
+              {% else %}
+                <div style="width:64px;height:64px;background:#f3f4f6;border-radius:50%"></div>
+              {% endif %}
+            </div>
+            <div>
+              <div style="font-weight:700">Нэр: <span style="font-weight:600">{{ session.username }}</span></div>
+              <div style="color:#111827;margin-top:4px;font-weight:700">Нас: <span style="font-weight:700">{{ session.age }}</span></div>
+            </div>
+          </div>
+          <form method="post" action="/profile/upload" enctype="multipart/form-data" style="margin-top:8px">
+            <label style="display:inline-flex;gap:8px;align-items:center">
+              <input type="file" name="profile_image" accept="image/*" />
+              <button type="submit" style="background:var(--accent);color:#fff;border:none;padding:.4rem .6rem;border-radius:6px;cursor:pointer">Зураг оруулах</button>
+            </label>
+          </form>
+        </div>
+
         <section style="margin-top:1rem">
           <h2>Унших түүх</h2>
           {% if sessions and sessions|length > 0 %}
@@ -60,6 +86,9 @@
                   <div style="flex:1">
                     <div style="font-weight:600">{{ t.title }}</div>
                     <div style="color:#6b7280;margin-top:6px">{{ (t.total_seconds // 60) }}m {{ (t.total_seconds % 60) }}s</div>
+                    {% if t.last_started %}
+                      <div style="color:#9ca3af;font-size:.85rem;margin-top:4px">Уншсан огноо: {{ t.last_started|datetimeformat }}</div>
+                    {% endif %}
                   </div>
                 </div>
               {% endfor %}

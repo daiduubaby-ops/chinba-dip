@@ -16,6 +16,7 @@ def init_db(path=None):
         if existing_cols != expected:
             # drop the old users table and recreate the updated one
             cur.execute('DROP TABLE IF EXISTS users')
+
     cur.execute('''
     CREATE TABLE IF NOT EXISTS notes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,6 +24,7 @@ def init_db(path=None):
         content TEXT
     )
     ''')
+
     # books table for listing
     cur.execute('''
     CREATE TABLE IF NOT EXISTS books (
@@ -30,9 +32,11 @@ def init_db(path=None):
         title TEXT NOT NULL,
         author TEXT,
         description TEXT,
-        image TEXT
+        image TEXT,
+        category TEXT
     )
     ''')
+
     # book_pages table stores uploaded page images for a book in display order
     cur.execute('''
     CREATE TABLE IF NOT EXISTS book_pages (
@@ -43,7 +47,8 @@ def init_db(path=None):
         FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE
     )
     ''')
-    # If the books table exists but doesn't have an image column, add it
+
+    # If the books table exists but doesn't have an image or category column, add them
     cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='books'")
     if cur.fetchone() is not None:
         cur.execute("PRAGMA table_info(books)")
@@ -53,6 +58,12 @@ def init_db(path=None):
                 cur.execute('ALTER TABLE books ADD COLUMN image TEXT')
             except Exception:
                 pass
+        if 'category' not in cols:
+            try:
+                cur.execute('ALTER TABLE books ADD COLUMN category TEXT')
+            except Exception:
+                pass
+
     # users table for authentication (name, age, password_hash)
     cur.execute('''
     CREATE TABLE IF NOT EXISTS users (
@@ -62,6 +73,18 @@ def init_db(path=None):
         password_hash TEXT NOT NULL
     )
     ''')
+
+    # ensure users table has image column for profile pictures
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+    if cur.fetchone() is not None:
+        cur.execute("PRAGMA table_info(users)")
+        cols = [r[1] for r in cur.fetchall()]
+        if 'image' not in cols:
+            try:
+                cur.execute('ALTER TABLE users ADD COLUMN image TEXT')
+            except Exception:
+                pass
+
     # reading_sessions table tracks when a user starts and stops reading a book
     cur.execute('''
     CREATE TABLE IF NOT EXISTS reading_sessions (
@@ -75,6 +98,7 @@ def init_db(path=None):
         FOREIGN KEY(book_id) REFERENCES books(id) ON DELETE CASCADE
     )
     ''')
+
     # Ensure existing databases that predate these columns get migrated.
     cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='reading_sessions'")
     if cur.fetchone() is not None:
@@ -108,6 +132,7 @@ def init_db(path=None):
                 cur.execute('UPDATE reading_sessions SET ended_at = end_time WHERE ended_at IS NULL')
             except Exception:
                 pass
+
     # insert sample data if table empty
     cur.execute('SELECT COUNT(*) FROM notes')
     if cur.fetchone()[0] == 0:

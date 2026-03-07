@@ -25,7 +25,6 @@
           {% else %}
             <a href="/" class="">Эхлэл</a>
             <a href="/books" class="active">Номнууд</a>
-            <a href="/#about">Тухай</a>
             <a href="/login" class="login-button">Нэвтрэх</a>
           {% endif %}
         </div>
@@ -36,27 +35,40 @@
         <h1>Бүх ном</h1>
       </header>
 
-      <div class="books-grid">
-        {% if books %}
-          {% for book in books %}
-        <a class="book-card" href="{{ url_for('book_detail', book_id=book.id) }}">
-          {% if book.image %}
-            <img src="{{ url_for('static', filename='uploads/' ~ book.image) }}" alt="{{ book.title }} cover" />
-          {% else %}
-            <div style="width:100%;height:160px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;margin-bottom:.5rem">Давхар бүрхүүл байхгүй</div>
-          {% endif %}
-          <div style="padding-top:.25rem">
-            <h3>{{ book.title }}</h3>
-            <p class="author">{{ book.author }}</p>
-            <!-- Description hidden on listing page; visible on book detail -->
-          </div>
-        </a>
-          {% endfor %}
-        {% else %}
-          <p>Одоогоор ном алга байна.</p>
-        {% endif %}
-      </div>
+      {% if groups %}
+        {% for category, books in groups.items() %}
+          <section style="margin:2rem 0">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <h2 style="margin:0 0 1rem">{{ category }}</h2>
+              {% if query %}
+                <!-- show query only on search results -->
+              {% endif %}
+            </div>
+            <div style="display:flex;gap:1rem;overflow-x:auto;padding:0.5rem 0">
+              {% for book in books %}
+                <a class="book-card" href="{{ url_for('book_detail', book_id=book.id) }}" style="min-width:150px;flex:0 0 150px">
+                  {% if book.image %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ book.image) }}" alt="{{ book.title }} cover" style="width:100%;height:200px;object-fit:cover;border-radius:6px" />
+                  {% else %}
+                    <div style="width:100%;height:160px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;margin-bottom:.5rem">Давхар бүрхүүл байхгүй</div>
+                  {% endif %}
+                  <div style="padding-top:.25rem">
+                    <h3 style="font-size:0.9rem;margin:0">{{ book.title }}</h3>
+                    <p class="author" style="font-size:0.8rem;margin:0">{{ book.author }}</p>
+                  </div>
+                </a>
+              {% endfor %}
+            </div>
+          </section>
+        {% endfor %}
+      {% else %}
+        <p>Одоогоор ном алга байна.</p>
+      {% endif %}
     </div>
+    <div style="clear:both"></div>
+    <footer style="margin-top:2rem;padding:1rem 0;color:#111827;background:#ffffff;font-size:.9rem;border-top:1px solid #e5e7eb;width:100%;text-align:center;position:relative"> 
+      Copyright © 2026 The Asia Foundation | Privacy Policy | Accessibility Statement
+    </footer>
+    <script src="/static/search.js"></script>
   </body>
 </html>
-  <script src="/static/search.js"></script>

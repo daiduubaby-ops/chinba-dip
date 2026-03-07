@@ -24,7 +24,6 @@
             <a href="/logout">Гарах</a>
           {% else %}
             <a href="/books">Номнууд</a>
-            <a href="#about">Тухай</a>
             <a href="/login" class="login-button">Нэвтрэх</a>
           {% endif %}
         </div>
@@ -36,31 +35,35 @@
         <a class="cta-button" href="/books">Бүх номыг үзэх</a>
       </header>
 
+      <!-- decorative side bubbles for kids (purely visual) -->
+      <div class="edge-decor edge-left" aria-hidden="true"></div>
+      <div class="edge-decor edge-right" aria-hidden="true"></div>
+
       <section id="featured" class="featured">
         <h2>Онцлох өгүүллэгүүд</h2>
         <div class="books-grid">
           <div class="book-card">
-            <h3>Жижиг Улаан Шатар</h3>
-            <p class="author">Хуучин үлгэр</p>
-            <p class="desc">Туслах, хуваалцахын ач холбогдлыг заадаг богино өгүүллэг.</p>
+            <img class="card-overlay" src="/static/uploads/malgai.jpg" alt="Жижиг Улаан Шатар номын зураг" />
+            <h3>Улаан малгайт</h3>
+            <p class="author">адал явдал</p>
+            <p class="desc">Нэг охин эмээдээ хоол хүргэж өгөхөөр ой руу явдаг. Замдаа чонотой тааралдаж, чоно эмээг нь хуурч идээд эмээний дүрд ордог. Харин анчин ирж охин болон эмээг авардаг.</p>
           </div>
           <div class="book-card">
-            <h3>Маш өлсгөлөн түүхийн шавьж</h3>
-            <p class="author">Эрик Карл</p>
-            <p class="desc">Өсөлт болон өөрчлөлтийн тухай өнгөлөг аялал.</p>
+            <img class="card-overlay" src="/static/uploads/gahai.jpg" alt="Маш өлсгөлөн түүхийн шавьж номын зураг" />
+            <h3>Гурван гахай</h3>
+            <p class="author">сургамжит</p>
+            <p class="desc">Гурван гахай тус бүр өөр өөр байшин барьдаг. Нэг нь сүрлээр, нэг нь модоор, нөгөө нь тоосгоор барина. Чоно үлээж эхний хоёр байшинг нураадаг ч тоосгон байшинг нурааж чаддаггүй.</p>
           </div>
           <div class="book-card">
-            <h3>Сайхан амраарай сар</h3>
-            <p class="author">Маргарет Уайз Браун</p>
-            <p class="desc">Жижиг хүүхдүүдэд зориулсан тайвшруулагч оройн цагийн классик.</p>
+            <img class="card-overlay" src="/static/uploads/tuulai.jpg" alt="Сайхан амраарай сар номын зураг" />
+            <h3>Туулай ба яст мэлхий</h3>
+            <p class="author">үлгэр</p>
+            <p class="desc">Туулай хурдан гүйдэг тул өөрийгөө хамгийн хурдан гэж боддог. Харин яст мэлхий удаан боловч тасралтгүй явсаар эцэст нь уралдаанд түрүүлдэг.</p>
           </div>
         </div>
       </section>
 
-      <section id="about" class="about">
-        <h2>Бидний тухай</h2>
-        <p>Бодож олсон зурган ном, богино өгүүллэгүүдийг үзэж, төсөөллийг төрүүлэх номнуудыг судал. Дээрх товч дээр дарж цуглуулгыг харах боломжтой.</p>
-      </section>
+      
 
      
 
@@ -99,4 +102,8 @@
     document.addEventListener('click', function(e){ if(!box.contains(e.target) && e.target !== input) hide() })
   })()
   </script>
+   <div style="clear:both"></div>
+    <footer style="margin-top:2rem;padding:1rem 0;color:#111827;background:#ffffff;font-size:.9rem;border-top:1px solid #e5e7eb;width:100%;text-align:center;position:relative"> 
+      Copyright © 2026 The Asia Foundation | Privacy Policy | Accessibility Statement
+    </footer>
   <script src="/static/search.js"></script>

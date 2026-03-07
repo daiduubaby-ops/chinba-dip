@@ -101,9 +101,45 @@ def ensure_reading_sessions_schema():
             pass
 
 
+def ensure_books_schema():
+    """Ensure the books table has the category column so older databases are compatible."""
+    conn = None
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='books'")
+        if cur.fetchone() is None:
+            conn.close()
+            return
+        cur.execute("PRAGMA table_info(books)")
+        existing = [r[1] for r in cur.fetchall()]
+        if 'category' not in existing:
+            try:
+                cur.execute('ALTER TABLE books ADD COLUMN category TEXT')
+                conn.commit()
+            except Exception:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+    except Exception:
+        try:
+            if conn:
+                conn.rollback()
+        except Exception:
+            pass
+    finally:
+        try:
+            if conn:
+                conn.close()
+        except Exception:
+            pass
+
+
 # Ensure DB schema is compatible on startup (helps for existing older DBs)
 try:
     ensure_reading_sessions_schema()
+    ensure_books_schema()
 except Exception:
     # avoid crashing the import if migrations fail for any reason
     pass
@@ -131,11 +167,16 @@ def index():
 def books():
     # show list of books from the DB
     conn = get_db_connection()
-    # include the image column so templates can show uploaded covers
-    rows = conn.execute('SELECT id, title, author, description, image FROM books ORDER BY id DESC').fetchall()
+    # include the image and category columns so templates can show uploaded covers and category
+    rows = conn.execute('SELECT id, title, author, description, image, category FROM books ORDER BY id DESC').fetchall()
     books = [dict(r) for r in rows]
     conn.close()
-    return render_template('books.html', books=books)
+    # group books by category (use 'Бусад' for uncategorized)
+    groups = {}
+    for b in books:
+        cat = b.get('category') or 'Бусад'
+        groups.setdefault(cat, []).append(b)
+    return render_template('books.html', groups=groups)
 
 
 @app.route('/search/suggest')
@@ -167,28 +208,35 @@ def search():
     """Full-page search results. Query param: q"""
     q = request.args.get('q', '').strip()
     conn = get_db_connection()
+    q_like = f"%{q}%"
     if not q:
-        rows = conn.execute('SELECT id, title, author, description, image FROM books ORDER BY id DESC').fetchall()
+        rows = conn.execute('SELECT id, title, author, description, image, category FROM books ORDER BY id DESC').fetchall()
         books = [dict(r) for r in rows]
         conn.close()
-        return render_template('books.html', books=books)
-    q_like = f"%{q}%"
+        groups = {}
+        for b in books:
+            cat = b.get('category') or 'Бусад'
+            groups.setdefault(cat, []).append(b)
+        return render_template('books.html', groups=groups)
+
     rows = conn.execute('''
-        SELECT id, title, author, description, image
+        SELECT id, title, author, description, image, category
         FROM books
         WHERE title LIKE ? OR author LIKE ? OR description LIKE ?
         ORDER BY id DESC
     ''', (q_like, q_like, q_like)).fetchall()
     books = [dict(r) for r in rows]
     conn.close()
-    return render_template('books.html', books=books, query=q)
+    # put search results in a single group so template can render consistently
+    groups = {f'"{q}"-ний үр дүн': books}
+    return render_template('books.html', groups=groups, query=q)
 
 
 @app.route('/books/<int:book_id>')
 def book_detail(book_id):
     """Show a single book's details on its own page."""
     conn = get_db_connection()
-    row = conn.execute('SELECT id, title, author, description, image FROM books WHERE id = ?', (book_id,)).fetchone()
+    row = conn.execute('SELECT id, title, author, description, image, category FROM books WHERE id = ?', (book_id,)).fetchone()
     conn.close()
     if row is None:
         flash('Book not found.')
@@ -235,7 +283,7 @@ def admin_books():
         return redirect(url_for('admin_login'))
     conn = get_db_connection()
     # include image column so admin list can reflect uploaded covers (if desired later)
-    rows = conn.execute('SELECT id, title, author, description, image FROM books ORDER BY id DESC').fetchall()
+    rows = conn.execute('SELECT id, title, author, description, image, category FROM books ORDER BY id DESC').fetchall()
     books = [dict(r) for r in rows]
     conn.close()
     return render_template('admin_books.html', books=books)
@@ -373,6 +421,7 @@ def admin_books_add():
     title = request.form.get('title', '').strip()
     author = request.form.get('author', '').strip()
     description = request.form.get('description', '').strip()
+    category = request.form.get('category', '').strip()
     image_file = request.files.get('image')
     image_filename = None
     if image_file and image_file.filename:
@@ -390,7 +439,7 @@ def admin_books_add():
     if title:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute('INSERT INTO books (title, author, description, image) VALUES (?, ?, ?, ?)', (title, author, description, image_filename))
+        cur.execute('INSERT INTO books (title, author, description, image, category) VALUES (?, ?, ?, ?, ?)', (title, author, description, image_filename, category))
         book_id = cur.lastrowid
         # save page records after creating book
         uploads_dir = os.path.join(app.static_folder, 'uploads')
@@ -490,7 +539,8 @@ def login():
 
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute('SELECT id, name, age, password_hash FROM users WHERE name = ?', (name,))
+        # include image column so we can store it in session for quick display
+        cur.execute('SELECT id, name, age, password_hash, image FROM users WHERE name = ?', (name,))
         row = cur.fetchone()
         if row is None:
             # keep the user on the login page and show a message instead of forcing a redirect
@@ -506,11 +556,14 @@ def login():
 
         user_id = row['id']
         user_age = row['age']
+        user_image = row['image'] if 'image' in row.keys() else None
         conn.close()
         session.clear()
         session['user_id'] = user_id
         session['username'] = name
         session['age'] = user_age
+        if user_image:
+            session['user_image'] = user_image
         flash('Welcome, {}!'.format(name))
         return redirect(url_for('index'))
 
@@ -614,10 +667,11 @@ def profile():
     ''', (user_id, user_id)).fetchall()
     sessions = [dict(r) for r in rows]
     agg = conn.execute('''
-        SELECT b.id as book_id, b.title, b.image as image, COALESCE(SUM(rs.duration_seconds),0) as total_seconds
+        SELECT b.id as book_id, b.title, b.image as image, COALESCE(SUM(rs.duration_seconds),0) as total_seconds,
+               MAX(rs.started_at) as last_started
         FROM books b
         LEFT JOIN reading_sessions rs ON rs.book_id = b.id AND rs.user_id = ?
-        GROUP BY b.id, b.title
+        GROUP BY b.id, b.title, b.image
         HAVING total_seconds > 0
         ORDER BY total_seconds DESC
     ''', (user_id,)).fetchall()
@@ -625,6 +679,38 @@ def profile():
     total_overall = sum(r['total_seconds'] for r in totals) if totals else 0
     conn.close()
     return render_template('profile.html', sessions=sessions, totals=totals, total_overall=total_overall)
+
+
+@app.route('/profile/upload', methods=['POST'])
+def profile_upload():
+    if not session.get('user_id'):
+        flash('Please log in to update your profile.')
+        return redirect(url_for('login'))
+    file = request.files.get('profile_image')
+    if not file or not file.filename:
+        flash('No file selected.')
+        return redirect(url_for('profile'))
+    # save to uploads/profile_<user_id>_filename
+    uploads_dir = os.path.join(app.static_folder, 'uploads')
+    os.makedirs(uploads_dir, exist_ok=True)
+    safe_name = os.path.basename(file.filename)
+    filename = f"profile_{session['user_id']}_{safe_name}"
+    path = os.path.join(uploads_dir, filename)
+    file.save(path)
+    # update users table
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute('UPDATE users SET image = ? WHERE id = ?', (filename, session['user_id']))
+        conn.commit()
+        # update session so new image appears immediately
+        session['user_image'] = filename
+    except Exception:
+        conn.rollback()
+    finally:
+        conn.close()
+    flash('Profile image updated.')
+    return redirect(url_for('profile'))
 
 
 if __name__ == '__main__':

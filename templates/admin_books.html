@@ -26,8 +26,20 @@
           <form method="post" action="/admin/books/add" enctype="multipart/form-data">
             <input name="title" placeholder="Нэр" required />
             <input name="author" placeholder="Зохиогч" />
+            <label>Категори:
+              <select name="category">
+                <option value="">-- Сонго --</option>
+                <option value="үлгэрийн ном">үлгэрийн ном</option>
+                <option value="зурагт ном">зурагт ном</option>
+                <option value="танин мэдэхүйн ном">танин мэдэхүйн ном</option>
+                <option value="хичээлийн ном">хичээлийн ном</option>
+                <option value="Амьтдын тухай ном">Амьтдын тухай ном</option>
+                <option value="Адал явдалт ном">Адал явдалт ном</option>
+                <option value="Сургамжит түүх">Сургамжит түүх</option>
+              </select>
+            </label>
             <!-- allow multiple page images (PNG recommended) -->
-            <label>Давхар бүрхүүл (хийлж өгөгдөх): <input name="image" type="file" accept="image/*" /></label>
+            <label>Нүүр хуудас <input name="image" type="file" accept="image/*" /></label>
             <label>Номын хуудас (PNG): <input name="pages" type="file" accept="image/png" multiple /></label>
             <textarea name="description" placeholder="Тайлбар"></textarea>
             <button type="submit">Ном нэмэх</button>
@@ -47,6 +59,9 @@
                 <div class="admin-book-info">
                     <h3 style="margin:.5rem 0 0">{{ b.title }}</h3>
                     <p class="author">{{ b.author }}</p>
+                    {% if b.category %}
+                      <p class="category" style="font-size:.86rem;color:#6b7280;margin:.25rem 0 0">{{ b.category }}</p>
+                    {% endif %}
                     <div class="admin-desc"><pre style="white-space:pre-wrap;margin:0;padding:8px;border:1px solid #e5e7eb;border-radius:6px;background:#fff">{{ b.description }}</pre></div>
                   </div>
                 </a>
