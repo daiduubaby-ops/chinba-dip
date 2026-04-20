@@ -37,7 +37,7 @@
         </div>
         <div class="book-detail" style="background:var(--card);padding:1rem;border-radius:10px;box-shadow:0 6px 20px rgba(2,6,23,0.06);display:flex;gap:1rem;align-items:flex-start">
           {% if book.image %}
-            <img src="{{ url_for('static', filename='uploads/' ~ book.image) }}" alt="{{ book.title }} cover" style="width:200px;height:280px;object-fit:cover;border-radius:8px;flex:0 0 200px" />
+            <img src="{{ url_for('static', filename='uploads/' ~ book.image) }}" alt="{{ book.title }} cover" class="cover-fixed" style="width:200px;height:280px;flex:0 0 200px" />
           {% endif %}
           <div>
             <h1 style="margin-top:0">{{ book.title }}</h1>

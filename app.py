@@ -136,10 +136,48 @@ def ensure_books_schema():
             pass
 
 
+def ensure_users_schema():
+    """Ensure the users table has the image column for profile pictures.
+    Older databases may lack this column; add it if missing.
+    """
+    conn = None
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+        if cur.fetchone() is None:
+            conn.close()
+            return
+        cur.execute("PRAGMA table_info(users)")
+        existing = [r[1] for r in cur.fetchall()]
+        if 'image' not in existing:
+            try:
+                cur.execute('ALTER TABLE users ADD COLUMN image TEXT')
+                conn.commit()
+            except Exception:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+    except Exception:
+        try:
+            if conn:
+                conn.rollback()
+        except Exception:
+            pass
+    finally:
+        try:
+            if conn:
+                conn.close()
+        except Exception:
+            pass
+
+
 # Ensure DB schema is compatible on startup (helps for existing older DBs)
 try:
     ensure_reading_sessions_schema()
     ensure_books_schema()
+    ensure_users_schema()
 except Exception:
     # avoid crashing the import if migrations fail for any reason
     pass
@@ -714,5 +752,19 @@ def profile_upload():
 
 
 if __name__ == '__main__':
-    # simple development server
-    app.run(debug=True)
+    # Allow configuring host/port/debug via environment so the app can be
+    # hosted on the LAN (e.g. HOST=0.0.0.0). Defaults keep prior behavior
+    # for local development.
+    host = os.environ.get('HOST', '127.0.0.1')
+    try:
+        port = int(os.environ.get('PORT', 5000))
+    except Exception:
+        port = 5000
+    debug_env = os.environ.get('DEBUG', None)
+    if debug_env is None:
+        # preserve previous default of debug=True for development
+        debug = True
+    else:
+        debug = str(debug_env).lower() in ('1', 'true', 'yes', 'on')
+
+    app.run(host=host, port=port, debug=debug)

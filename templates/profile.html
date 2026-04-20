@@ -32,8 +32,8 @@
             {% set user_img = None %}
             {# try to fetch user's image filename from DB via session.user_id - but templates shouldn't run DB calls; instead, session may hold it. Fall back to default if not present. #}
             <div style="width:64px;height:64px;flex:0 0 64px">
-              {% if session.get('user_image') %}
-                <img src="{{ url_for('static', filename='uploads/' ~ session.user_image) }}" alt="profile" style="width:64px;height:64px;object-fit:cover;border-radius:50%" />
+                {% if session.get('user_image') %}
+                  <img src="{{ url_for('static', filename='uploads/' ~ session.user_image) }}" alt="profile" style="width:64px;height:64px;object-fit:cover;border-radius:50%" />
               {% else %}
                 <div style="width:64px;height:64px;background:#f3f4f6;border-radius:50%"></div>
               {% endif %}
@@ -58,8 +58,8 @@
               {% for s in sessions %}
                 <div class="card" style="background:var(--card);padding:8px;border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;box-shadow:0 6px 18px rgba(2,6,23,0.06)">
                   {% set img = s.image %}
-                  {% if img %}
-                    <img src="{{ url_for('static', filename='uploads/' ~ img) }}" alt="{{ s.title }} cover" style="width:100%;height:160px;object-fit:cover;border-radius:6px" />
+                    {% if img %}
+                      <img src="{{ url_for('static', filename='uploads/' ~ img) }}" alt="{{ s.title }} cover" class="cover-fixed" />
                   {% else %}
                     <div style="width:100%;height:160px;background:#f3f4f6;border-radius:6px"></div>
                   {% endif %}
@@ -78,8 +78,8 @@
             <div class="card-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:8px">
               {% for t in totals %}
                 <div class="card" style="background:var(--card);padding:10px;border-radius:8px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 18px rgba(2,6,23,0.06)">
-                  {% if t.image %}
-                    <img src="{{ url_for('static', filename='uploads/' ~ t.image) }}" alt="{{ t.title }} cover" style="width:64px;height:88px;object-fit:cover;border-radius:6px;flex:0 0 64px" />
+                    {% if t.image %}
+                      <img src="{{ url_for('static', filename='uploads/' ~ t.image) }}" alt="{{ t.title }} cover" style="width:64px;height:88px;object-fit:cover;border-radius:6px;flex:0 0 64px" />
                   {% else %}
                     <div style="width:64px;height:88px;background:#f3f4f6;border-radius:6px;flex:0 0 64px"></div>
                   {% endif %}

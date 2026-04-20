@@ -48,7 +48,7 @@
               {% for book in books %}
                 <a class="book-card" href="{{ url_for('book_detail', book_id=book.id) }}" style="min-width:150px;flex:0 0 150px">
                   {% if book.image %}
-                    <img src="{{ url_for('static', filename='uploads/' ~ book.image) }}" alt="{{ book.title }} cover" style="width:100%;height:200px;object-fit:cover;border-radius:6px" />
+                    <img src="{{ url_for('static', filename='uploads/' ~ book.image) }}" alt="{{ book.title }} cover" />
                   {% else %}
                     <div style="width:100%;height:160px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;margin-bottom:.5rem">Давхар бүрхүүл байхгүй</div>
                   {% endif %}
