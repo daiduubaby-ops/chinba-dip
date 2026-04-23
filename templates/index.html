@@ -17,14 +17,15 @@
           <div id="nav-suggestions" style="position:absolute;left:50%;transform:translateX(-50%);top:54px;z-index:40;display:none;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(2,6,23,0.08);overflow:hidden;width:360px"></div>
         </div>
         <div class="nav-right">
+          {%- from "_icons.html" import icon -%}
           {% if session.get('username') %}
             <span class="profile-pill">{{ session.username }}</span>
-            <a href="/books">Номнууд</a>
-            <a href="/profile">Профайл</a>
-            <a href="/logout">Гарах</a>
+            <a class="btn-with-icon" href="/books">{{ icon('book') }}Номнууд</a>
+            <a class="btn-with-icon" href="/profile">{{ icon('user') }}Профайл</a>
+            <a class="btn-with-icon" href="/logout">{{ icon('logout') }}Гарах</a>
           {% else %}
-            <a href="/books">Номнууд</a>
-            <a href="/login" class="login-button">Нэвтрэх</a>
+            <a class="btn-with-icon" href="/books">{{ icon('book') }}Номнууд</a>
+            <a class="login-button btn-with-icon" href="/login">{{ icon('login') }}Нэвтрэх</a>
           {% endif %}
         </div>
       </nav>
@@ -32,34 +33,49 @@
       <header class="hero">
         <h1>Хүүхдийн Номын Клубд тавтай морилно уу</h1>
         <p class="lead">Залуухан уншигчдад зориулсан өхөөрдөм өгүүллэгүүдийг олох өнгөлөг газар.</p>
-        <a class="cta-button" href="/books">Бүх номыг үзэх</a>
+        {%- from "_icons.html" import icon -%}
+        <a class="cta-button btn-with-icon" href="/books">{{ icon('book-open') }}Бүх номыг үзэх</a>
       </header>
 
       <!-- decorative side bubbles for kids (purely visual) -->
-      <div class="edge-decor edge-left" aria-hidden="true"></div>
-      <div class="edge-decor edge-right" aria-hidden="true"></div>
+<div class="edge-decor edge-left" aria-hidden="true"></div>
+<div class="edge-decor edge-right" aria-hidden="true"></div>
 
       <section id="featured" class="featured">
         <h2>Онцлох өгүүллэгүүд</h2>
         <div class="books-grid">
-          <div class="book-card">
-            <img class="card-overlay" src="/static/uploads/malgai.jpg" alt="Жижиг Улаан Шатар номын зураг" />
-            <h3>Улаан малгайт</h3>
-            <p class="author">адал явдал</p>
-            <p class="desc">Нэг охин эмээдээ хоол хүргэж өгөхөөр ой руу явдаг. Замдаа чонотой тааралдаж, чоно эмээг нь хуурч идээд эмээний дүрд ордог. Харин анчин ирж охин болон эмээг авардаг.</p>
-          </div>
-          <div class="book-card">
-            <img class="card-overlay" src="/static/uploads/gahai.jpg" alt="Маш өлсгөлөн түүхийн шавьж номын зураг" />
-            <h3>Гурван гахай</h3>
-            <p class="author">сургамжит</p>
-            <p class="desc">Гурван гахай тус бүр өөр өөр байшин барьдаг. Нэг нь сүрлээр, нэг нь модоор, нөгөө нь тоосгоор барина. Чоно үлээж эхний хоёр байшинг нураадаг ч тоосгон байшинг нурааж чаддаггүй.</p>
-          </div>
-          <div class="book-card">
-            <img class="card-overlay" src="/static/uploads/tuulai.jpg" alt="Сайхан амраарай сар номын зураг" />
-            <h3>Туулай ба яст мэлхий</h3>
-            <p class="author">үлгэр</p>
-            <p class="desc">Туулай хурдан гүйдэг тул өөрийгөө хамгийн хурдан гэж боддог. Харин яст мэлхий удаан боловч тасралтгүй явсаар эцэст нь уралдаанд түрүүлдэг.</p>
-          </div>
+          {%- if featured_books -%}
+            {%- for b in featured_books -%}
+              <a href="{{ url_for('book_read', book_id=b.id) }}" class="book-card">
+                {%- if b.image -%}
+                  <img class="card-overlay" src="{{ url_for('static', filename='uploads/' ~ b.image) }}" alt="{{ b.title }} cover" />
+                {%- endif -%}
+                <h3>{{ b.title }}</h3>
+                <p class="author">{{ b.author }}</p>
+                <p class="desc">{{ b.description }}</p>
+              </a>
+            {%- endfor -%}
+          {%- else -%}
+            <!-- Fallback static cards when no books in DB -->
+            <a class="book-card" href="#">
+              <img class="card-overlay" src="/static/uploads/malgai.jpg" alt="Жижиг Улаан Шатар номын зураг" />
+              <h3>Улаан малгайт</h3>
+              <p class="author">адал явдал</p>
+              <p class="desc">Нэг охин эмээдээ хоол хүргэж өгөхөөр ой руу явдаг. Замдаа чонотой тааралдаж, чоно эмээг нь хуурч идээд эмээний дүрд ордог. Харин анчин ирж охин болон эмээг авардаг.</p>
+            </a>
+            <a class="book-card" href="#">
+              <img class="card-overlay" src="/static/uploads/gahai.jpg" alt="Маш өлсгөлөн түүхийн шавьж номын зураг" />
+              <h3>Гурван гахай</h3>
+              <p class="author">сургамжит</p>
+              <p class="desc">Гурван гахай тус бүр өөр өөр байшин барьдаг. Нэг нь сүрлээр, нэг нь модоор, нөгөө нь тоосгоор барина. Чоно үлээж эхний хоёр байшинг нураадаг ч тоосгон байшинг нурааж чаддаггүй.</p>
+            </a>
+            <a class="book-card" href="#">
+              <img class="card-overlay" src="/static/uploads/tuulai.jpg" alt="Сайхан амраарай сар номын зураг" />
+              <h3>Туулай ба яст мэлхий</h3>
+              <p class="author">үлгэр</p>
+              <p class="desc">Туулай хурдан гүйдэг тул өөрийгөө хамгийн хурдан гэж боддог. Харин яст мэлхий удаан боловч тасралтгүй явсаар эцэст нь уралдаанд түрүүлдэг.</p>
+            </a>
+          {%- endif -%}
         </div>
       </section>
 

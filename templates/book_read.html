@@ -126,29 +126,33 @@
           <a href="/" class="logo">Хүүхдийн&nbsp;Номын&nbsp;Клуб</a>
         </div>
         <div class="nav-right">
-          <a href="/books">Номнууд</a>
+          {%- from "_icons.html" import icon -%}
           {% if session.get('username') %}
             <span class="profile-pill">{{ session.username }}</span>
-            <a href="/profile">Профайл</a>
-            <a href="/logout">Гарах</a>
+            <a class="btn-with-icon" href="/books">{{ icon('book') }}Номнууд</a>
+            <a class="btn-with-icon" href="/profile">{{ icon('user') }}Профайл</a>
+            <a class="btn-with-icon" href="/logout">{{ icon('logout') }}Гарах</a>
           {% else %}
-            <a href="/login" class="login-button">Нэвтрэх</a>
+            <a class="btn-with-icon" href="/books">{{ icon('book') }}Номнууд</a>
+            <a class="login-button btn-with-icon" href="/login">{{ icon('login') }}Нэвтрэх</a>
           {% endif %}
         </div>
       </nav>
 
       <main>
-        <a href="{{ url_for('book_detail', book_id=book.id) }}" class="back">← Номны дэлгэрэнгүй руу буцах</a>
+        {%- from "_icons.html" import icon -%}
+        <a href="{{ url_for('book_detail', book_id=book.id) }}" class="back" aria-label="Back to book details">{{ icon('chev-left') }} <span class="back-text">Номны дэлгэрэнгүй руу буцах</span></a>
         <h1>Уншиж байна: {{ book.title }}</h1>
 
+        {%- from "_icons.html" import icon -%}
         <div class="reader-controls">
-        <button id="prev" class="primary">Өмнөх</button>
-        <button id="toggleSingle" class="primary">Нэг хуудас</button>
-        <button id="fullscreenBtn" class="primary">Бүх хуудас</button>
+        <button id="prev" class="primary btn-with-icon">{{ icon('chev-left') }}Өмнөх</button>
+        <button id="toggleSingle" class="primary btn-with-icon">{{ icon('single') }}Нэг хуудас</button>
+        <button id="fullscreenBtn" class="primary btn-with-icon">{{ icon('fullscreen') }}Бүх хуудас</button>
         <div style="font-weight:600">Хуудас <span id="pageNum">1</span></div>
         <input type="number" id="pageInput" min="1" value="1" />
         <div id="pageOf" style="color:#374151;margin-left:4px">/ 0</div>
-        <button id="next" class="primary">Дараа</button>
+        <button id="next" class="primary btn-with-icon">Дараа{{ icon('chev-right') }}</button>
         </div>
 
         <div class="reader" id="reader">

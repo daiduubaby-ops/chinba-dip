@@ -15,14 +15,16 @@
           <div id="nav-suggestions" style="position:absolute;left:50%;transform:translateX(-50%);top:54px;z-index:40;display:none;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(2,6,23,0.08);overflow:hidden;width:360px"></div>
         </div>
         <div class="nav-right">
+          {%- from "_icons.html" import icon -%}
           <span class="profile-pill">{{ session.username }}</span>
-          <a href="/books">Номнууд</a>
-          <a href="/logout">Гарах</a>
+          <a class="btn-with-icon" href="/books">{{ icon('book') }}Номнууд</a>
+          <a class="btn-with-icon" href="/logout">{{ icon('logout') }}Гарах</a>
         </div>
       </nav>
 
       <main>
-        <a href="/" class="back">← Эхлэл</a>
+        {%- from "_icons.html" import icon -%}
+        <a href="/" class="back" aria-label="Back to home">{{ icon('chev-left') }} <span class="back-text">Эхлэл</span></a>
         <h1>Таны профайл</h1>
 
         <div style="margin-top:0.5rem;padding:.6rem;background:var(--card);border-radius:8px;display:inline-block">
@@ -44,9 +46,10 @@
             </div>
           </div>
           <form method="post" action="/profile/upload" enctype="multipart/form-data" style="margin-top:8px">
+            {%- from "_icons.html" import icon -%}
             <label style="display:inline-flex;gap:8px;align-items:center">
               <input type="file" name="profile_image" accept="image/*" />
-              <button type="submit" style="background:var(--accent);color:#fff;border:none;padding:.4rem .6rem;border-radius:6px;cursor:pointer">Зураг оруулах</button>
+              <button type="submit" class="btn-with-icon" style="background:var(--accent);color:#fff;border:none;padding:.4rem .6rem;border-radius:6px;cursor:pointer">{{ icon('upload') }}Зураг оруулах</button>
             </label>
           </form>
         </div>

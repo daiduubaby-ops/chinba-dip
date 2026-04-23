@@ -1,8 +1,9 @@
 import os
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify, make_response
 import time
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash
+from argon2 import PasswordHasher, exceptions as argon2_exceptions
 
 app = Flask(__name__, instance_relative_config=True)
 # secret key for session management; in production set via environment
@@ -12,6 +13,11 @@ app.secret_key = os.environ.get('SECRET_KEY', 'dev_secret_key')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '0247790208')
 # ensure the instance folder exists (where the sqlite DB will live)
 os.makedirs(app.instance_path, exist_ok=True)
+
+# Argon2 password hasher for secure password storage. Parameters chosen to be
+# moderately strong for a web application; adjust (time_cost/memory_cost)
+# depending on your deployment environment.
+ph = PasswordHasher(time_cost=2, memory_cost=65536, parallelism=2)
 
 
 def get_db_connection():
@@ -113,9 +119,20 @@ def ensure_books_schema():
             return
         cur.execute("PRAGMA table_info(books)")
         existing = [r[1] for r in cur.fetchall()]
+        # Add category column if missing
         if 'category' not in existing:
             try:
                 cur.execute('ALTER TABLE books ADD COLUMN category TEXT')
+                conn.commit()
+            except Exception:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+        # Add featured flag column if missing; use INTEGER (0/1) default 0
+        if 'featured' not in existing:
+            try:
+                cur.execute("ALTER TABLE books ADD COLUMN featured INTEGER DEFAULT 0")
                 conn.commit()
             except Exception:
                 try:
@@ -197,8 +214,29 @@ def datetimeformat(value):
 
 @app.route('/')
 def index():
-    # Landing page
-    return render_template('index.html')
+    # Landing page - show featured books (latest 3) so the featured cards
+    # can link directly to their reader pages.
+    # Query featured books and return a no-cache response so admins see updates immediately
+    conn = get_db_connection()
+    try:
+        rows = conn.execute('SELECT id, title, author, description, image FROM books WHERE featured = 1 ORDER BY id DESC').fetchall()
+        featured_books = [dict(r) for r in rows]
+        if not featured_books:
+            rows = conn.execute('SELECT id, title, author, description, image FROM books ORDER BY id DESC LIMIT 3').fetchall()
+            featured_books = [dict(r) for r in rows]
+    except Exception:
+        featured_books = []
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+    resp = make_response(render_template('index.html', featured_books=featured_books))
+    # prevent stale caching in browsers (development-friendly)
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    return resp
 
 
 @app.route('/books')
@@ -321,7 +359,7 @@ def admin_books():
         return redirect(url_for('admin_login'))
     conn = get_db_connection()
     # include image column so admin list can reflect uploaded covers (if desired later)
-    rows = conn.execute('SELECT id, title, author, description, image, category FROM books ORDER BY id DESC').fetchall()
+    rows = conn.execute('SELECT id, title, author, description, image, category, featured FROM books ORDER BY id DESC').fetchall()
     books = [dict(r) for r in rows]
     conn.close()
     return render_template('admin_books.html', books=books)
@@ -474,10 +512,25 @@ def admin_books_add():
     # handle multiple page uploads (PNG expected)
     pages = request.files.getlist('pages')
 
+    # determine featured flag from form (checkbox may be present)
+    try:
+        featured_flag = 1 if request.form.get('featured') in ('1','on','true') else 0
+    except Exception:
+        featured_flag = 0
+
     if title:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute('INSERT INTO books (title, author, description, image, category) VALUES (?, ?, ?, ?, ?)', (title, author, description, image_filename, category))
+        # include featured column if present in DB
+        try:
+            cur.execute("PRAGMA table_info(books)")
+            cols = [r[1] for r in cur.fetchall()]
+        except Exception:
+            cols = []
+        if 'featured' in cols:
+            cur.execute('INSERT INTO books (title, author, description, image, category, featured) VALUES (?, ?, ?, ?, ?, ?)', (title, author, description, image_filename, category, featured_flag))
+        else:
+            cur.execute('INSERT INTO books (title, author, description, image, category) VALUES (?, ?, ?, ?, ?)', (title, author, description, image_filename, category))
         book_id = cur.lastrowid
         # save page records after creating book
         uploads_dir = os.path.join(app.static_folder, 'uploads')
@@ -507,6 +560,56 @@ def admin_books_delete(book_id):
     conn.commit()
     conn.close()
     return redirect(url_for('admin_books'))
+
+
+@app.route('/admin/books/<int:book_id>/feature', methods=['POST'])
+def admin_book_feature(book_id):
+    # Toggle featured flag for a book (AJAX endpoint used by admin UI)
+    if not session.get('is_admin'):
+        return jsonify({'error': 'authentication required'}), 401
+    data = request.get_json() or {}
+    try:
+        featured = 1 if int(data.get('featured', 0)) else 0
+    except Exception:
+        featured = 0
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("PRAGMA table_info(books)")
+        cols = [r[1] for r in cur.fetchall()]
+    except Exception:
+        cols = []
+    if 'featured' not in cols:
+        conn.close()
+        return jsonify({'error': 'featured column not available'}), 400
+
+    try:
+        cur.execute('UPDATE books SET featured = ? WHERE id = ?', (featured, book_id))
+        conn.commit()
+        conn.close()
+        return jsonify({'ok': True})
+    except Exception:
+        conn.rollback()
+        conn.close()
+        return jsonify({'error': 'database error'}), 500
+
+
+@app.route('/featured.json')
+def featured_json():
+    # Return JSON list of featured books (falls back to latest 3 if none marked)
+    conn = get_db_connection()
+    try:
+        rows = conn.execute('SELECT id, title, author, description, image FROM books WHERE featured = 1 ORDER BY id DESC').fetchall()
+        if not rows:
+            rows = conn.execute('SELECT id, title, author, description, image FROM books ORDER BY id DESC LIMIT 3').fetchall()
+        featured = [{'id': r['id'], 'title': r['title'], 'author': r['author'], 'description': r['description'], 'image': r['image']} for r in rows]
+        return jsonify({'featured': featured})
+    finally:
+        try:
+            conn.close()
+        except Exception:
+            pass
 
 
 @app.route('/add', methods=['POST'])
@@ -555,7 +658,9 @@ def register():
             flash('A user with that name already exists.')
             return redirect(url_for('register'))
 
-        pw_hash = generate_password_hash(password)
+        # Hash the password using Argon2 before storing it.
+        # This replaces the previous Werkzeug PBKDF2 hashes with Argon2 for new users.
+        pw_hash = ph.hash(password)
         cur.execute('INSERT INTO users (name, age, password_hash) VALUES (?, ?, ?)', (name, age_int, pw_hash))
         conn.commit()
         conn.close()
@@ -587,12 +692,49 @@ def login():
             return redirect(url_for('login'))
 
         stored_hash = row['password_hash']
-        if not check_password_hash(stored_hash, password):
+        user_id = row['id']
+
+        # Support both Argon2 (new) and Werkzeug PBKDF2 (old) hashes.
+        # Try Argon2 verification first; if the stored hash is not Argon2,
+        # argon2_exceptions.InvalidHash will be raised and we fall back to PBKDF2.
+        valid = False
+        try:
+            # this raises VerifyMismatchError on bad password, InvalidHash if not argon2 format
+            ph.verify(stored_hash, password)
+            valid = True
+            # If Argon2 parameters changed, rehash and store new hash
+            try:
+                if ph.check_needs_rehash(stored_hash):
+                    new_hash = ph.hash(password)
+                    cur.execute('UPDATE users SET password_hash = ? WHERE id = ?', (new_hash, user_id))
+                    conn.commit()
+            except Exception:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+        except argon2_exceptions.VerifyMismatchError:
+            valid = False
+        except argon2_exceptions.InvalidHash:
+            # not an Argon2 hash; fallback to Werkzeug PBKDF2 verification
+            if check_password_hash(stored_hash, password):
+                valid = True
+                # upgrade PBKDF2->Argon2 by hashing and saving
+                try:
+                    new_hash = ph.hash(password)
+                    cur.execute('UPDATE users SET password_hash = ? WHERE id = ?', (new_hash, user_id))
+                    conn.commit()
+                except Exception:
+                    try:
+                        conn.rollback()
+                    except Exception:
+                        pass
+
+        if not valid:
             conn.close()
             flash('Invalid name or password.')
             return redirect(url_for('login'))
 
-        user_id = row['id']
         user_age = row['age']
         user_image = row['image'] if 'image' in row.keys() else None
         conn.close()

@@ -13,8 +13,10 @@
           <a href="/" class="logo">Хүүхдийн&nbsp;Номын&nbsp;Клуб</a>
         </div>
         <div class="nav-right">
-          <a href="/books">Номнууд</a>
-          <a href="/logout">Гарах</a>
+          {%- from "_icons.html" import icon -%}
+          <a class="btn-with-icon" href="/books">{{ icon('book') }}Номнууд</a>
+          <a class="btn-with-icon" href="/logout">{{ icon('logout') }}Гарах</a>
+        </div>
         </div>
       </nav>
 
@@ -23,7 +25,7 @@
 
         <section class="note-form">
           <h3>Ном нэмэх</h3>
-          <form method="post" action="/admin/books/add" enctype="multipart/form-data">
+            <form method="post" action="/admin/books/add" enctype="multipart/form-data">
             <input name="title" placeholder="Нэр" required />
             <input name="author" placeholder="Зохиогч" />
             <label>Категори:
@@ -38,11 +40,15 @@
                 <option value="Сургамжит түүх">Сургамжит түүх</option>
               </select>
             </label>
+            <label style="display:inline-flex;align-items:center;gap:.5rem;margin-top:.5rem">
+              <input type="checkbox" name="featured" value="1" /> Онцлох (Онцлох өгүүллэгүүд дээр гаргах)
+            </label>
             <!-- allow multiple page images (PNG recommended) -->
             <label>Нүүр хуудас <input name="image" type="file" accept="image/*" /></label>
             <label>Номын хуудас (PNG): <input name="pages" type="file" accept="image/png" multiple /></label>
             <textarea name="description" placeholder="Тайлбар"></textarea>
-            <button type="submit">Ном нэмэх</button>
+            {%- from "_icons.html" import icon -%}
+            <button type="submit" class="btn-with-icon">{{ icon('plus') }}Ном нэмэх</button>
           </form>
         </section>
 
@@ -66,9 +72,14 @@
                   </div>
                 </a>
                 <div class="admin-book-actions">
-                  <a class="button" href="{{ url_for('admin_book_pages', book_id=b.id) }}">Хуудас удирдах</a>
+                  {%- from "_icons.html" import icon -%}
+                  <a class="button btn-with-icon" href="{{ url_for('admin_book_pages', book_id=b.id) }}">{{ icon('upload') }}Хуудас удирдах</a>
+                  <label style="display:inline-flex;align-items:center;gap:.5rem;margin-right:8px">
+                    <input type="checkbox" class="feature-toggle" data-book-id="{{ b.id }}" {% if b.featured %}checked{% endif %} />
+                    <span style="font-size:.9rem">Онцлох</span>
+                  </label>
                   <form method="post" action="/admin/books/delete/{{ b.id }}" onsubmit="return confirm('Delete this book?');">
-                    <button class="delete" type="submit">Устгах</button>
+                    <button class="delete btn-with-icon" type="submit">{{ icon('trash') }}Устгах</button>
                   </form>
                 </div>
               </div>

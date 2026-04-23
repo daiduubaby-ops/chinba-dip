@@ -13,14 +13,15 @@
           <a href="/" class="logo">Хүүхдийн&nbsp;Номын&nbsp;Клуб</a>
         </div>
         <div class="nav-right">
+          {%- from "_icons.html" import icon -%}
           {% if session.get('username') %}
             <span class="profile-pill">{{ session.username }}</span>
-            <a href="/books">Номнууд</a>
-            <a href="/profile">Профайл</a>
-            <a href="/logout">Гарах</a>
+            <a class="btn-with-icon" href="/books">{{ icon('book') }}Номнууд</a>
+            <a class="btn-with-icon" href="/profile">{{ icon('user') }}Профайл</a>
+            <a class="btn-with-icon" href="/logout">{{ icon('logout') }}Гарах</a>
           {% else %}
-            <a href="/books">Номнууд</a>
-            <a href="/login" class="login-button">Нэвтрэх</a>
+            <a class="btn-with-icon" href="/books">{{ icon('book') }}Номнууд</a>
+            <a class="login-button btn-with-icon" href="/login">{{ icon('login') }}Нэвтрэх</a>
           {% endif %}
         </div>
       </nav>
@@ -55,7 +56,8 @@
           <label>Нууц үг
             <input name="password" type="password" required placeholder="Нууц үг сонгоно уу" />
           </label>
-          <button type="submit" class="primary">Бүртгүүлэх</button>
+          {%- from "_icons.html" import icon -%}
+          <button type="submit" class="primary btn-with-icon">{{ icon('plus') }}Бүртгүүлэх</button>
         </form>
 
         <p class="muted">Аль хэдийн бүртгэлтэй юу? <a href="/login">Нэвтрэх</a></p>

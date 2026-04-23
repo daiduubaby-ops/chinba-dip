@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Хүүхдийн Номын Клуб</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <nav class="nav">
+        <div class="nav-left">
+          <a href="/" class="logo">Хүүхдийн&nbsp;Номын&nbsp;Клуб</a>
+        </div>
+        <div class="nav-center">
+          <input id="nav-search" class="nav-search" placeholder="хайлт" autocomplete="off" />
+          <div id="nav-suggestions" style="position:absolute;left:50%;transform:translateX(-50%);top:54px;z-index:40;display:none;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(2,6,23,0.08);overflow:hidden;width:360px"></div>
+        </div>
+        <div class="nav-right">
+            <a class="btn-with-icon" href="/books">
+  
+  
+    <svg class="icon " xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7.5A2.5 2.5 0 0 1 4.5 5h6A2.5 2.5 0 0 1 13 7.5v11A2.5 2.5 0 0 1 10.5 21H4.5A2.5 2.5 0 0 1 2 18.5v-11z"/><path d="M11 7.5A2.5 2.5 0 0 1 13.5 5H19.5A2.5 2.5 0 0 1 22 7.5v11A2.5 2.5 0 0 1 19.5 21H13.5A2.5 2.5 0 0 1 11 18.5v-11z"/></svg>
+  
+Номнууд</a>
+            <a class="login-button btn-with-icon" href="/login">
+  
+  
+    <svg class="icon " xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+  
+Нэвтрэх</a>
+          
+        </div>
+      </nav>
+
+      <header class="hero">
+        <h1>Хүүхдийн Номын Клубд тавтай морилно уу</h1>
+        <p class="lead">Залуухан уншигчдад зориулсан өхөөрдөм өгүүллэгүүдийг олох өнгөлөг газар.</p><a class="cta-button btn-with-icon" href="/books">
+  
+  
+    <svg class="icon " xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="M3 7a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7z"/></svg>
+  
+Бүх номыг үзэх</a>
+      </header>
+
+      <!-- decorative side bubbles for kids (purely visual) -->
+<div class="edge-decor edge-left" aria-hidden="true"></div>
+<div class="edge-decor edge-right" aria-hidden="true"></div>
+
+      <section id="featured" class="featured">
+        <h2>Онцлох өгүүллэгүүд</h2>
+        <div class="books-grid"><a href="/books/37/read" class="book-card"><img class="card-overlay" src="/static/uploads/9aa057519eb648be9dbeb8e83e5c00068IACMtKnb20FrTvt-0.jpg" alt="Гэрийн даалгавар cover" /><h3>Гэрийн даалгавар</h3>
+                <p class="author">T.Albert</p>
+                <p class="desc">Хичээлээ яаж сонирхолтой хийх вэ?</p>
+              </a><a href="/books/36/read" class="book-card"><img class="card-overlay" src="/static/uploads/bff97f4ba83d47a0e3be7226e2b62da7yqFI6bC66MLQURAs-0.jpg" alt="Алдагдсан инээмлэглэл cover" /><h3>Алдагдсан инээмлэглэл</h3>
+                <p class="author">T.Albert</p>
+                <p class="desc">Инээмсэглэл</p>
+              </a><a href="/books/35/read" class="book-card"><img class="card-overlay" src="/static/uploads/011-DYLAN-THE-DRAGON-Free-Childrens-Book-By-Monkey-Pen-1.jpg" alt="Цэнхэр лууг унах cover" /><h3>Цэнхэр лууг унах</h3>
+                <p class="author">T.Albert</p>
+                <p class="desc">Луутай найзлах</p>
+              </a></div>
+      </section>
+
+      
+
+     
+
+      
+    </div>
+  </body>
+</html>
+  <script>
+  // Live suggestions for the nav search input
+  (function(){
+    const input = document.getElementById('nav-search')
+    const box = document.getElementById('nav-suggestions')
+    let timer = null
+    function hide(){ box.style.display='none'; box.innerHTML = '' }
+    function render(items){
+      if(!items || items.length===0){ hide(); return }
+      box.innerHTML = items.map(i=>`<a href="${location.origin}/books/${i.id}" style="display:flex;gap:8px;padding:8px 10px;align-items:center;text-decoration:none;color:#111"><div style="width:40px;height:56px;flex:0 0 40px;background:#f3f4f6;border-radius:4px;overflow:hidden">${i.image?`<img src='/static/uploads/${i.image}' style='width:100%;height:100%;object-fit:cover'/>`:''}</div><div style='flex:1'><div style='font-weight:600'>${i.title}</div><div style='color:#6b7280;font-size:.9rem'>${i.author||''}</div></div></a>`).join('')
+      box.style.display = 'block'
+    }
+    input && input.addEventListener('input', function(){
+      const q = input.value.trim()
+      if(timer) clearTimeout(timer)
+      if(!q){ hide(); return }
+      timer = setTimeout(()=>{
+        fetch(`/search/suggest?q=${encodeURIComponent(q)}`)
+          .then(r=>r.json()).then(j=>{ render(j.suggestions || []) }).catch(()=>{ hide() })
+      }, 180)
+    })
+    // Submit on Enter -> go to full search page
+    input && input.addEventListener('keydown', function(e){
+      if(e.key === 'Enter'){
+        const q = input.value.trim()
+        if(q) location.href = `${location.origin}/search?q=${encodeURIComponent(q)}`
+      }
+    })
+    document.addEventListener('click', function(e){ if(!box.contains(e.target) && e.target !== input) hide() })
+  })()
+  </script>
+   <div style="clear:both"></div>
+    <footer style="margin-top:2rem;padding:1rem 0;color:#111827;background:#ffffff;font-size:.9rem;border-top:1px solid #e5e7eb;width:100%;text-align:center;position:relative"> 
+      Copyright © 2026 The Asia Foundation | Privacy Policy | Accessibility Statement
+    </footer>
+  <script src="/static/search.js"></script>

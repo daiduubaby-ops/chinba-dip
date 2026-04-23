@@ -17,7 +17,9 @@
           <div id="nav-suggestions" style="position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:40;display:none;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(2,6,23,0.08);overflow:hidden;width:360px"></div>
         </div>
         <div class="nav-right">
-          <a href="/books">Номнууд</a>
+          {%- from "_icons.html" import icon -%}
+          <a class="btn-with-icon" href="/books">{{ icon('book') }}Номнууд</a>
+          <a class="btn-with-icon" href="/logout">{{ icon('logout') }}Гарах</a>
         </div>
       </nav>
 
@@ -34,11 +36,12 @@
             {% endif %}
           {% endwith %}
 
-          <form method="post" action="/admin/login" class="auth-form">
+            {%- from "_icons.html" import icon -%}
+            <form method="post" action="/admin/login" class="auth-form">
             <label>Админы нууц үг
               <input name="password" type="password" required placeholder="Админы нууц үг" />
             </label>
-            <button type="submit" class="primary">Нэвтрэх</button>
+            <button type="submit" class="primary btn-with-icon">{{ icon('login') }}Нэвтрэх</button>
           </form>
         </div>
       </main>

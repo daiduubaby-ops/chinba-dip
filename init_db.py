@@ -33,7 +33,8 @@ def init_db(path=None):
         author TEXT,
         description TEXT,
         image TEXT,
-        category TEXT
+        category TEXT,
+        featured INTEGER DEFAULT 0
     )
     ''')
 
@@ -61,6 +62,11 @@ def init_db(path=None):
         if 'category' not in cols:
             try:
                 cur.execute('ALTER TABLE books ADD COLUMN category TEXT')
+            except Exception:
+                pass
+        if 'featured' not in cols:
+            try:
+                cur.execute('ALTER TABLE books ADD COLUMN featured INTEGER DEFAULT 0')
             except Exception:
                 pass
 

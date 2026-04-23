@@ -10,7 +10,11 @@
     <div class="container">
       <nav class="nav">
         <div class="nav-left"><a href="/" class="logo">Хүүхдийн&nbsp;Номын&nbsp;Клуб</a></div>
-        <div class="nav-right"><a href="/admin/books">Буцах</a> <a href="/logout">Гарах</a></div>
+        <div class="nav-right">
+          {%- from "_icons.html" import icon -%}
+          <a class="btn-with-icon" href="/admin/books">{{ icon('chev-left') }}Буцах</a>
+          <a class="btn-with-icon" href="/logout">{{ icon('logout') }}Гарах</a>
+        </div>
       </nav>
       <main>
         <h1>"{{ book.title }}" номын хуудас удирдах</h1>
@@ -19,7 +23,8 @@
         <h3>Хуудас нэмэх</h3>
           <form method="post" enctype="multipart/form-data">
             <input name="pages" type="file" accept="image/*" multiple />
-            <button type="submit">Ачааллах</button>
+            {%- from "_icons.html" import icon -%}
+            <button type="submit" class="btn-with-icon">{{ icon('upload') }}Ачааллах</button>
           </form>
         </section>
 
@@ -38,14 +43,15 @@
                 <div style="flex:0 0 auto;display:flex;gap:.25rem">
                   <form method="post" action="{{ url_for('admin_book_page_move', book_id=book.id, page_id=p.id) }}">
                     <input type="hidden" name="direction" value="up" />
-                    <button type="submit" title="Move up">↑</button>
+                    {%- from "_icons.html" import icon -%}
+                    <button type="submit" title="Move up" class="btn-with-icon">{{ icon('chev-up') }}</button>
                   </form>
                   <form method="post" action="{{ url_for('admin_book_page_move', book_id=book.id, page_id=p.id) }}">
                     <input type="hidden" name="direction" value="down" />
-                    <button type="submit" title="Move down">↓</button>
+                    <button type="submit" title="Move down" class="btn-with-icon">{{ icon('chev-down') }}</button>
                   </form>
                   <form method="post" action="{{ url_for('admin_book_page_delete', book_id=book.id, page_id=p.id) }}" onsubmit="return confirm('Delete this page?');">
-                    <button type="submit" class="delete">Delete</button>
+                    <button type="submit" class="delete btn-with-icon">{{ icon('trash') }}Delete</button>
                   </form>
                 </div>
               </div>

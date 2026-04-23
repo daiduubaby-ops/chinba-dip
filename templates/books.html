@@ -17,44 +17,46 @@
           <div id="nav-suggestions" style="position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:40;display:none;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(2,6,23,0.08);overflow:hidden;width:360px"></div>
         </div>
         <div class="nav-right">
+          {%- from "_icons.html" import icon -%}
           {% if session.get('username') %}
             <span class="profile-pill">{{ session.username }}</span>
-            <a href="/books" class="active">Номнууд</a>
-            <a href="/profile">Профайл</a>
-            <a href="/logout">Гарах</a>
+            <a class="btn-with-icon active" href="/books">{{ icon('book') }}Номнууд</a>
+            <a class="btn-with-icon" href="/profile">{{ icon('user') }}Профайл</a>
+            <a class="btn-with-icon" href="/logout">{{ icon('logout') }}Гарах</a>
           {% else %}
-            <a href="/" class="">Эхлэл</a>
-            <a href="/books" class="active">Номнууд</a>
-            <a href="/login" class="login-button">Нэвтрэх</a>
+            <a class="btn-with-icon" href="/">{{ icon('chev-left') }}Эхлэл</a>
+            <a class="btn-with-icon active" href="/books">{{ icon('book') }}Номнууд</a>
+            <a class="login-button btn-with-icon" href="/login">{{ icon('login') }}Нэвтрэх</a>
           {% endif %}
         </div>
       </nav>
 
       <header>
-        <a href="/" class="back">← Эхлэл</a>
+        {%- from "_icons.html" import icon -%}
+        <a href="/" class="back" aria-label="Back to home">{{ icon('chev-left') }} <span class="back-text">Эхлэл</span></a>
         <h1>Бүх ном</h1>
       </header>
 
       {% if groups %}
         {% for category, books in groups.items() %}
           <section style="margin:2rem 0">
-            <div style="display:flex;align-items:center;justify-content:space-between">
+<div class="category-header">
               <h2 style="margin:0 0 1rem">{{ category }}</h2>
               {% if query %}
                 <!-- show query only on search results -->
               {% endif %}
             </div>
-            <div style="display:flex;gap:1rem;overflow-x:auto;padding:0.5rem 0">
-              {% for book in books %}
-                <a class="book-card" href="{{ url_for('book_detail', book_id=book.id) }}" style="min-width:150px;flex:0 0 150px">
+<div class="books-list">
+            {% for book in books %}
+<a class="book-card" href="{{ url_for('book_detail', book_id=book.id) }}">
                   {% if book.image %}
                     <img src="{{ url_for('static', filename='uploads/' ~ book.image) }}" alt="{{ book.title }} cover" />
                   {% else %}
-                    <div style="width:100%;height:160px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;margin-bottom:.5rem">Давхар бүрхүүл байхгүй</div>
+<div class="no-cover">Давхар бүрхүүл байхгүй</div>
                   {% endif %}
-                  <div style="padding-top:.25rem">
-                    <h3 style="font-size:0.9rem;margin:0">{{ book.title }}</h3>
-                    <p class="author" style="font-size:0.8rem;margin:0">{{ book.author }}</p>
+<div class="book-info">
+<h3>{{ book.title }}</h3>
+<p class="author">{{ book.author }}</p>
                   </div>
                 </a>
               {% endfor %}

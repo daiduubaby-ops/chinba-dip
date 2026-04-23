@@ -12,24 +12,29 @@
         <div class="nav-left">
           <a href="/" class="logo">Хүүхдийн&nbsp;Номын&nbsp;Клуб</a>
         </div>
+        <div class="nav-center">
+          <input id="nav-search" class="nav-search" placeholder="хайлт" autocomplete="off" />
+          <div id="nav-suggestions" style="position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:40;display:none;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(2,6,23,0.08);overflow:hidden;width:360px"></div>
+        </div>
         <div class="nav-right">
+          {%- from "_icons.html" import icon -%}
           {% if session.get('username') %}
             <span class="profile-pill">{{ session.username }}</span>
-            <a href="/books">Books</a>
-            <a href="/profile">Profile</a>
-            <a href="/logout">Logout</a>
+            <a class="btn-with-icon" href="/books">{{ icon('book') }}Номнууд</a>
+            <a class="btn-with-icon" href="/profile">{{ icon('user') }}Профайл</a>
+            <a class="btn-with-icon" href="/logout">{{ icon('logout') }}Гарах</a>
           {% else %}
-            <a href="/books">Номнууд</a>
-            <a href="/register">Бүртгүүлэх</a>
+            <a class="btn-with-icon" href="/books">{{ icon('book') }}Номнууд</a>
+            <a class="login-button btn-with-icon" href="/register">{{ icon('plus') }}Бүртгүүлэх</a>
           {% endif %}
         </div>
       </nav>
 
-      <main class="auth card">
-        <div class="auth-card-header">
+<main class="auth card">
+<div class="auth-card-header">
           <h1>Хүүхдийн&nbsp;Номын&nbsp;Клуб руу нэвтрэх</h1>
         </div>
-        <div class="auth-card-body">
+<div class="auth-card-body">
         {% with messages = get_flashed_messages() %}
           {% if messages %}
             <ul class="flashes">
@@ -39,21 +44,19 @@
             </ul>
           {% endif %}
         {% endwith %}
-        <div class="nav-center">
-          <input id="nav-search" class="nav-search" placeholder="хайлт" autocomplete="off" />
-          <div id="nav-suggestions" style="position:absolute;left:50%;transform:translateX(-50%);top:64px;z-index:40;display:none;background:#fff;border-radius:8px;box-shadow:0 10px 30px rgba(2,6,23,0.08);overflow:hidden;width:360px"></div>
-        </div>
-        <form method="post" action="/login" class="auth-form">
+        
+<form method="post" action="/login" class="auth-form">
           <label>Нэр
             <input name="name" required placeholder="жишээ: Сара" />
           </label>
           <label>Нууц үг
             <input name="password" type="password" required placeholder="Нууц үгээ оруулна уу" />
           </label>
-          <button type="submit" class="primary">Нэвтрэх</button>
+          {%- from "_icons.html" import icon -%}
+          <button type="submit" class="primary btn-with-icon">{{ icon('login') }}Нэвтрэх</button>
         </form>
 
-        <p class="muted">Бүртгэлгүй юу? <a href="/register">Шинээр үүсгээрэй</a> </p>
+<p class="muted">Бүртгэлгүй юу? <a href="/register">Шинээр үүсгээрэй</a> </p>
         </div>
       </main>
     </div>
